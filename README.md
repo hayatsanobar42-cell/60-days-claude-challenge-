@@ -1,13 +1,14 @@
-# 60-days-claude-challenge-
-About Me 
-Hi I am Sanobar Hayat
-I am a B.tech student 
+# 60 Day Claude Challenge
 
-My goals 
-Learn Ai tools 
-improve coding skills
-complete the 60-days challenge 
-Build Practical projects
+## About Me
+Hi, I'm Nadiya.
+I am a B.Tech student.
 
-Commitment 
-I will continuously learn and document my progress throughout this challenge
+## My Goals
+- Learn AI tools
+- Improve coding skills
+- Complete the 60-day challenge
+- Build practical projects
+
+## Commitment
+I will consistently learn and document my progress throughout this challenge.
