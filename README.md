@@ -1,7 +1,7 @@
 # 60 Day Claude Challenge
 
 ## About Me
-Hi, I'm Nadiya.
+Hi, I'm Sanobar
 I am a B.Tech student.
 
 ## My Goals
