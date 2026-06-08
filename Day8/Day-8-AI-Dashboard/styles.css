@@ -1,0 +1,740 @@
+/* ============================================
+   GLOBAL STYLES
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+    color: #e0e6ff;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   HEADER STYLES
+   ============================================ */
+
+.header {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 30px;
+    text-align: center;
+    animation: fadeIn 0.6s ease-in;
+}
+
+.header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header p {
+    font-size: 1.1em;
+    color: #a0aec0;
+    margin-bottom: 20px;
+}
+
+.data-info {
+    font-size: 0.9em;
+    color: #90cdf4;
+    background: rgba(66, 153, 225, 0.1);
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: inline-block;
+    border-left: 3px solid #4299e1;
+}
+
+/* ============================================
+   CONTROLS SECTION
+   ============================================ */
+
+.controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+    background: rgba(30, 41, 59, 0.6);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+select, input {
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(226, 232, 240, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #e0e6ff;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    background: rgba(226, 232, 240, 0.1);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* ============================================
+   METRICS GRID
+   ============================================ */
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    transition: all 0.3s ease;
+    animation: slideUp 0.6s ease-out;
+}
+
+.metric-card:hover {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    transform: translateY(-5px);
+}
+
+.metric-label {
+    font-size: 0.85em;
+    color: #a0aec0;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.metric-value {
+    font-size: 2.5em;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 5px;
+}
+
+.metric-unit {
+    font-size: 0.8em;
+    color: #718096;
+}
+
+/* ============================================
+   CHARTS SECTION
+   ============================================ */
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 25px;
+    animation: slideUp 0.6s ease-out;
+}
+
+.chart-title {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================
+   CITY CARDS
+   ============================================ */
+
+.city-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.city-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(45, 55, 72, 0.6) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: slideUp 0.6s ease-out;
+}
+
+.city-card:hover {
+    border-color: #8b5cf6;
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+}
+
+.city-card.selected {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.city-name {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-bottom: 15px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+    font-size: 0.95em;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: #a0aec0;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #e0e6ff;
+}
+
+/* ============================================
+   AQI BADGES
+   ============================================ */
+
+.aqi-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+
+.aqi-good {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+    border: 1px solid #22c55e;
+}
+
+.aqi-moderate {
+    background: rgba(132, 204, 22, 0.2);
+    color: #bef264;
+    border: 1px solid #84cc16;
+}
+
+.aqi-unhealthy-groups {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
+}
+
+.aqi-unhealthy {
+    background: rgba(249, 115, 22, 0.2);
+    color: #fb923c;
+    border: 1px solid #f97316;
+}
+
+.aqi-very-unhealthy {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border: 1px solid #ef4444;
+}
+
+.aqi-severe {
+    background: rgba(120, 53, 15, 0.3);
+    color: #f87171;
+    border: 1px solid #7f1d1d;
+}
+
+/* ============================================
+   HEALTH ANALYSIS SECTION
+   ============================================ */
+
+.health-analysis {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    animation: slideUp 0.6s ease-out;
+}
+
+.section-title {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+    padding-bottom: 15px;
+}
+
+.health-impact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.impact-item {
+    background: rgba(226, 232, 240, 0.03);
+    border-left: 4px solid #8b5cf6;
+    padding: 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.impact-item:hover {
+    background: rgba(226, 232, 240, 0.06);
+    border-left-color: #6366f1;
+}
+
+.impact-label {
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.impact-description {
+    font-size: 0.9em;
+    color: #a0aec0;
+    line-height: 1.5;
+}
+
+.risk-indicator {
+    display: inline-block;
+    margin-left: 10px;
+    font-weight: 700;
+    font-size: 1.2em;
+}
+
+/* ============================================
+   REPORT CARD SECTION
+   ============================================ */
+
+.report-card {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    animation: slideUp 0.6s ease-out;
+}
+
+.score-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.score-box {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.score-box:hover {
+    border-color: #8b5cf6;
+    background: rgba(30, 41, 59, 0.95);
+}
+
+.score-label {
+    font-size: 0.9em;
+    color: #a0aec0;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.score-number {
+    font-size: 3em;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+}
+
+.score-max {
+    font-size: 1em;
+    color: #718096;
+}
+
+.grade {
+    font-size: 1.3em;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.grade-a {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+}
+
+.grade-b {
+    background: rgba(132, 204, 22, 0.2);
+    color: #bef264;
+}
+
+.grade-c {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.grade-d {
+    background: rgba(249, 115, 22, 0.2);
+    color: #fb923c;
+}
+
+.grade-f {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+/* ============================================
+   INSIGHTS SECTION
+   ============================================ */
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.insight-card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    animation: slideUp 0.6s ease-out;
+}
+
+.insight-title {
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.insight-list {
+    list-style: none;
+}
+
+.insight-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+    font-size: 0.95em;
+    color: #a0aec0;
+}
+
+.insight-list li:last-child {
+    border-bottom: none;
+}
+
+.insight-list li:before {
+    content: "✓ ";
+    color: #8b5cf6;
+    font-weight: 700;
+    margin-right: 8px;
+}
+
+/* ============================================
+   RECOMMENDATIONS SECTION
+   ============================================ */
+
+.recommendations {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    animation: slideUp 0.6s ease-out;
+}
+
+.rec-category {
+    margin-bottom: 30px;
+}
+
+.rec-category-title {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rec-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.rec-item {
+    background: rgba(226, 232, 240, 0.03);
+    border-left: 3px solid #8b5cf6;
+    padding: 15px;
+    border-radius: 6px;
+    font-size: 0.95em;
+    color: #a0aec0;
+    line-height: 1.6;
+    transition: all 0.3s ease;
+}
+
+.rec-item:hover {
+    background: rgba(226, 232, 240, 0.06);
+    border-left-color: #6366f1;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: #718096;
+    font-size: 0.9em;
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.footer p {
+    margin: 10px 0;
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #a0aec0;
+    font-size: 1.1em;
+}
+
+.status-info {
+    padding: 20px;
+    background: rgba(226, 232, 240, 0.05);
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.status-info > div {
+    padding: 20px;
+    background: rgba(226, 232, 240, 0.05);
+    border-radius: 8px;
+}
+
+.status-label {
+    font-size: 0.9em;
+    color: #a0aec0;
+    margin-bottom: 10px;
+}
+
+.status-value {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #8b5cf6;
+}
+
+.status-unit {
+    font-size: 0.85em;
+    color: #718096;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.8em;
+    }
+
+    .header {
+        padding: 30px 20px;
+    }
+
+    .metrics-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .city-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .controls {
+        grid-template-columns: 1fr;
+    }
+
+    .score-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .rec-list {
+        grid-template-columns: 1fr;
+    }
+
+    .insights-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .health-impact {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 0;
+    }
+
+    .header {
+        padding: 20px 15px;
+        border-radius: 12px;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+        margin-bottom: 8px;
+    }
+
+    .header p {
+        font-size: 0.95em;
+        margin-bottom: 15px;
+    }
+
+    .data-info {
+        font-size: 0.8em;
+        padding: 8px 15px;
+    }
+
+    .controls {
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .metric-card {
+        padding: 20px;
+    }
+
+    .metric-value {
+        font-size: 2em;
+    }
+
+    .city-card {
+        padding: 15px;
+    }
+
+    .section-title {
+        font-size: 1.2em;
+    }
+}
