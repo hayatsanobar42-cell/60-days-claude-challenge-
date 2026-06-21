@@ -1,0 +1,36 @@
+# Day 21 - Digital Privacy Intelligence Dashboard
+
+## Objective
+
+Built an interactive privacy intelligence dashboard that analyzes a user's digital footprint and estimates privacy exposure.
+
+## Tools Used
+
+- Claude AI
+- HTML
+- CSS
+- JavaScript
+- Chart.js
+
+## Key Features
+
+- Digital Footprint Score
+- Privacy Score
+- Exposure Heatmap
+- Company Exposure Ranking
+- Data Collection Matrix
+- Risk Radar
+- Digital Twin Profile
+- Privacy Improvement Simulator
+
+## Key Learnings
+
+- Digital services collect different categories of data.
+- Ecosystem concentration increases privacy risks.
+- Visual dashboards improve privacy awareness.
+- Interactive analytics make risk assessment easier.
+
+## Files
+
+- index.html
+- Screenshots
