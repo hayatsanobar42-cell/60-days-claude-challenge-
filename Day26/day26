@@ -1,0 +1,18 @@
+# Day 26 - Prior Authorization Workflow Simulator
+
+## Objective
+Built an interactive Prior Authorization Workflow Simulator to understand the healthcare insurance approval process.
+
+## Features
+- Patient workflow simulation
+- Drag-and-drop workflow stages
+- Document submission
+- Approval, Pending, Denial & Appeal scenarios
+- Journey Tracker
+- Workflow Summary
+
+## Learnings
+- Learned the Prior Authorization process.
+- Understood healthcare workflow stages.
+- Improved HTML application generation using Claude AI.
+- Practiced GitHub project organization.
