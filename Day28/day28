@@ -1,0 +1,23 @@
+# Day 28 – Hospital Admission Readiness Simulator
+
+## Objective
+Built an interactive Hospital Admission Readiness Simulator using HTML, Tailwind CSS and Vanilla JavaScript.
+
+## Features
+- Provider & Physician Information
+- Patient Admission Workflow
+- Prior Authorization Management
+- Documentation Validation
+- Insurance Verification
+- Bed Availability Check
+- Clinical Readiness Analysis
+- Governance Snapshot
+- Admission Readiness Score
+- Final Admission Decision
+
+## Learnings
+- Hospital admission workflow
+- Prior Authorization process
+- Healthcare operations
+- Risk reduction
+- Interactive workflow simulation
