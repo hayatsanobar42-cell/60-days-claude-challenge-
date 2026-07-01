@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Supply Chain Control Tower</title>
+<style>
+/* ============================================================
+   ROOT / THEME
+   ============================================================ */
+:root{
+  --bg-void:#05080f;
+  --bg-panel:#0b111d;
+  --bg-panel-2:#101828;
+  --bg-card:#0d1420;
+  --line:#1c2942;
+  --line-soft:#141e30;
+  --cyan:#33e0ff;
+  --cyan-dim:#0d3a47;
+  --blue:#4d7dff;
+  --green:#33ffa8;
+  --orange:#ffb23d;
+  --red:#ff4d5e;
+  --text-hi:#eaf2ff;
+  --text-mid:#8fa3c4;
+  --text-lo:#4d5f80;
+  --font-display:'Rajdhani', 'Segoe UI', sans-serif;
+  --font-mono:'Share Tech Mono','Consolas',monospace;
+  --font-body:'Inter','Segoe UI',sans-serif;
+}
+
+@font-face{ font-family:'Rajdhani'; src:local('Rajdhani'); }
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  height:100%;
+  background:var(--bg-void);
+  color:var(--text-hi);
+  font-family:var(--font-body);
+  overflow-x:hidden;
+}
+
+body{
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(51,224,255,0.06), transparent 40%),
+    radial-gradient(circle at 85% 90%, rgba(77,125,255,0.08), transparent 45%),
+    linear-gradient(180deg, #05080f 0%, #060a13 100%);
+  min-height:100vh;
+}
+
+::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar-track{ background:var(--bg-panel); }
+::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 24px;
+  background:linear-gradient(180deg, rgba(13,20,32,0.95), rgba(9,14,24,0.85));
+  border-bottom:1px solid var(--line);
+  position:sticky;
+  top:0;
+  z-index:50;
+  backdrop-filter:blur(10px);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.brand-mark{
+  width:34px; height:34px;
+  border-radius:8px;
+  background:linear-gradient(135deg, var(--cyan), var(--blue));
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display);
+  font-weight:800;
+  color:#00131a;
+  font-size:16px;
+  box-shadow:0 0 18px rgba(51,224,255,0.45);
+  flex-shrink:0;
+}
+
+.brand-text h1{
+  font-family:var(--font-display);
+  font-size:19px;
+  letter-spacing:0.5px;
+  font-weight:700;
+  color:var(--text-hi);
+  line-height:1.1;
+}
+
+.brand-text span{
+  font-family:var(--font-mono);
+  font-size:10px;
+  letter-spacing:2px;
+  color:var(--cyan);
+  text-transform:uppercase;
+}
+
+.topbar-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.icon-btn{
+  width:38px; height:38px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:var(--bg-panel-2);
+  color:var(--text-mid);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  font-size:16px;
+  transition:all .18s ease;
+}
+.icon-btn:hover{
+  border-color:var(--cyan);
+  color:var(--cyan);
+  box-shadow:0 0 12px rgba(51,224,255,0.25);
+}
+.icon-btn.active{
+  border-color:var(--green);
+  color:var(--green);
+  box-shadow:0 0 12px rgba(51,255,168,0.25);
+}
+
+.timer-chip{
+  font-family:var(--font-mono);
+  font-size:20px;
+  font-weight:700;
+  padding:7px 16px;
+  border-radius:8px;
+  background:var(--bg-panel-2);
+  border:1px solid var(--line);
+  color:var(--cyan);
+  letter-spacing:1px;
+  min-width:92px;
+  text-align:center;
+}
+.timer-chip.low{
+  color:var(--red);
+  border-color:var(--red);
+  animation:pulseText 1s infinite;
+}
+
+@keyframes pulseText{
+  0%,100%{ opacity:1; }
+  50%{ opacity:0.55; }
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app{
+  max-width:1440px;
+  margin:0 auto;
+  padding:20px 24px 60px;
+}
+
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:12px;
+  margin-bottom:20px;
+}
+@media (max-width:1100px){ .kpi-grid{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:560px){ .kpi-grid{ grid-template-columns:1fr 1fr; } }
+
+.kpi-card{
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:14px 16px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .3s, box-shadow .3s;
+}
+.kpi-card::before{
+  content:'';
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:3px;
+  background:var(--cyan);
+  opacity:0.7;
+}
+.kpi-card.warn::before{ background:var(--orange); }
+.kpi-card.crit::before{ background:var(--red); }
+.kpi-card.good::before{ background:var(--green); }
+
+.kpi-label{
+  font-family:var(--font-mono);
+  font-size:10px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-mid);
+  margin-bottom:6px;
+}
+.kpi-value{
+  font-family:var(--font-display);
+  font-size:26px;
+  font-weight:700;
+  color:var(--text-hi);
+  display:flex;
+  align-items:baseline;
+  gap:4px;
+}
+.kpi-value small{
+  font-size:13px;
+  font-weight:500;
+  color:var(--text-mid);
+}
+.kpi-bar{
+  height:4px;
+  border-radius:2px;
+  background:var(--line-soft);
+  margin-top:8px;
+  overflow:hidden;
+}
+.kpi-bar-fill{
+  height:100%;
+  background:var(--cyan);
+  border-radius:2px;
+  transition:width .4s ease, background .4s ease;
+}
+.kpi-delta{
+  position:absolute;
+  top:10px; right:12px;
+  font-family:var(--font-mono);
+  font-size:11px;
+  font-weight:700;
+  opacity:0;
+  transform:translateY(4px);
+  transition:all .25s ease;
+}
+.kpi-delta.show{ opacity:1; transform:translateY(0); }
+.kpi-delta.pos{ color:var(--green); }
+.kpi-delta.neg{ color:var(--red); }
+
+/* ============================================================
+   MAIN GRID: Alerts + Log
+   ============================================================ */
+.main-grid{
+  display:grid;
+  grid-template-columns:1fr 340px;
+  gap:16px;
+  align-items:start;
+}
+@media (max-width:980px){
+  .main-grid{ grid-template-columns:1fr; }
+}
+
+.panel{
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+}
+
+.panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 18px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg-panel-2);
+}
+.panel-head h2{
+  font-family:var(--font-display);
+  font-size:15px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--text-hi);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.live-dot{
+  width:8px; height:8px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 8px var(--green);
+  animation:blink 1.4s infinite;
+}
+@keyframes blink{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+.panel-sub{
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:var(--text-mid);
+}
+
+/* ---------- Alerts feed ---------- */
+.alert-feed{
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-height:320px;
+}
+
+.empty-state{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:60px 20px;
+  color:var(--text-lo);
+  text-align:center;
+  gap:8px;
+}
+.empty-state .glyph{ font-size:34px; opacity:0.6; }
+.empty-state .t1{ font-family:var(--font-display); font-size:15px; color:var(--text-mid); }
+.empty-state .t2{ font-family:var(--font-mono); font-size:11px; }
+
+.alert-card{
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-left:4px solid var(--blue);
+  border-radius:10px;
+  padding:16px;
+  position:relative;
+  animation:slideIn .35s ease;
+}
+@keyframes slideIn{
+  from{ opacity:0; transform:translateY(-10px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+.alert-card.priority-critical{
+  border-left-color:var(--red);
+  box-shadow:0 0 0 1px rgba(255,77,94,0.15), 0 0 24px rgba(255,77,94,0.08);
+}
+.alert-card.priority-high{ border-left-color:var(--orange); }
+.alert-card.priority-medium{ border-left-color:var(--blue); }
+
+.alert-card.pulse::after{
+  content:'';
+  position:absolute; inset:0;
+  border-radius:10px;
+  border:1px solid var(--red);
+  opacity:0;
+  animation:cardPulse 1.6s infinite;
+  pointer-events:none;
+}
+@keyframes cardPulse{
+  0%{ opacity:0.6; transform:scale(1); }
+  100%{ opacity:0; transform:scale(1.02); }
+}
+
+.alert-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:8px;
+}
+.alert-title{
+  font-family:var(--font-display);
+  font-size:16px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.alert-desc{
+  font-size:13px;
+  color:var(--text-mid);
+  line-height:1.5;
+  margin-bottom:10px;
+}
+.alert-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:12px;
+}
+.tag{
+  font-family:var(--font-mono);
+  font-size:10px;
+  letter-spacing:0.5px;
+  padding:3px 8px;
+  border-radius:5px;
+  border:1px solid var(--line);
+  color:var(--text-mid);
+  text-transform:uppercase;
+}
+.tag.prio-critical{ color:var(--red); border-color:rgba(255,77,94,0.4); background:rgba(255,77,94,0.08); }
+.tag.prio-high{ color:var(--orange); border-color:rgba(255,178,61,0.4); background:rgba(255,178,61,0.08); }
+.tag.prio-medium{ color:var(--blue); border-color:rgba(77,125,255,0.4); background:rgba(77,125,255,0.08); }
+.tag.impact{ color:var(--cyan); }
+.tag.timer{ font-variant-numeric:tabular-nums; }
+
+.alert-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.act-btn{
+  font-family:var(--font-body);
+  font-size:12.5px;
+  font-weight:600;
+  padding:8px 12px;
+  border-radius:7px;
+  border:1px solid var(--line);
+  background:var(--bg-panel-2);
+  color:var(--text-hi);
+  cursor:pointer;
+  transition:all .15s ease;
+}
+.act-btn:hover{
+  border-color:var(--cyan);
+  background:rgba(51,224,255,0.08);
+  transform:translateY(-1px);
+}
+.act-btn.best{ border-color:rgba(51,255,168,0.4); }
+.act-btn.ignore{ color:var(--text-mid); }
+.act-btn.delay{ color:var(--orange); border-color:rgba(255,178,61,0.3); }
+
+.alert-timebar{
+  height:3px;
+  border-radius:2px;
+  background:var(--line-soft);
+  margin-top:12px;
+  overflow:hidden;
+}
+.alert-timebar-fill{
+  height:100%;
+  background:var(--blue);
+  transition:width 0.3s linear;
+}
+.priority-critical .alert-timebar-fill{ background:var(--red); }
+.priority-high .alert-timebar-fill{ background:var(--orange); }
+
+/* ---------- Event log ---------- */
+.log-feed{
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  max-height:640px;
+  overflow-y:auto;
+}
+.log-entry{
+  font-family:var(--font-mono);
+  font-size:11.5px;
+  line-height:1.5;
+  padding:8px 10px;
+  border-radius:7px;
+  background:var(--bg-card);
+  border:1px solid var(--line-soft);
+  color:var(--text-mid);
+  animation:slideIn .3s ease;
+}
+.log-entry .ts{ color:var(--text-lo); margin-right:6px; }
+.log-entry.good{ color:var(--green); border-color:rgba(51,255,168,0.25); }
+.log-entry.bad{ color:var(--red); border-color:rgba(255,77,94,0.25); }
+.log-entry.neutral{ color:var(--text-mid); }
+.log-entry.system{ color:var(--cyan); border-color:rgba(51,224,255,0.25); }
+
+/* ============================================================
+   SCORE / STATUS strip
+   ============================================================ */
+.status-strip{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  padding:12px 18px;
+  background:var(--bg-panel-2);
+  border-bottom:1px solid var(--line);
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:var(--text-mid);
+  flex-wrap:wrap;
+}
+.status-strip b{ color:var(--text-hi); font-size:13px; font-family:var(--font-display); }
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+.modal-overlay{
+  position:fixed; inset:0;
+  background:rgba(3,6,12,0.82);
+  backdrop-filter:blur(4px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:200;
+  padding:20px;
+}
+.modal-overlay.open{ display:flex; }
+
+.modal{
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  max-width:520px;
+  width:100%;
+  max-height:86vh;
+  overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(51,224,255,0.06);
+}
+.modal-head{
+  padding:20px 24px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.modal-head h2{
+  font-family:var(--font-display);
+  font-size:20px;
+  letter-spacing:0.5px;
+}
+.modal-body{ padding:22px 24px; }
+.modal-body p, .modal-body li{
+  font-size:13.5px;
+  color:var(--text-mid);
+  line-height:1.7;
+}
+.modal-body h3{
+  font-family:var(--font-display);
+  font-size:14px;
+  color:var(--cyan);
+  margin:16px 0 6px;
+  letter-spacing:0.5px;
+}
+.modal-body ul{ padding-left:18px; margin-bottom:4px; }
+.modal-close{
+  width:32px;height:32px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--text-mid);
+  cursor:pointer;
+  font-size:16px;
+}
+.modal-close:hover{ color:var(--red); border-color:var(--red); }
+
+.btn-primary{
+  font-family:var(--font-display);
+  font-weight:700;
+  letter-spacing:0.5px;
+  font-size:14px;
+  padding:12px 26px;
+  border-radius:9px;
+  border:none;
+  background:linear-gradient(135deg, var(--cyan), var(--blue));
+  color:#00131a;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.btn-primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(51,224,255,0.3);
+}
+
+/* ---------- Start screen ---------- */
+.start-screen{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:80px 20px;
+  gap:18px;
+}
+.start-screen .glyph-big{
+  font-size:54px;
+  filter:drop-shadow(0 0 20px rgba(51,224,255,0.4));
+}
+.start-screen h1{
+  font-family:var(--font-display);
+  font-size:38px;
+  letter-spacing:1px;
+  background:linear-gradient(135deg, #eaf2ff, var(--cyan));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.start-screen p{
+  max-width:520px;
+  color:var(--text-mid);
+  font-size:14.5px;
+  line-height:1.7;
+}
+
+/* ---------- Results ---------- */
+.results-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin:18px 0;
+}
+.result-tile{
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:12px 14px;
+}
+.result-tile .rl{ font-family:var(--font-mono); font-size:10px; color:var(--text-mid); text-transform:uppercase; letter-spacing:1px; }
+.result-tile .rv{ font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--text-hi); }
+
+.grade-badge{
+  width:88px; height:88px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display);
+  font-size:36px;
+  font-weight:800;
+  margin:8px auto 4px;
+  border:3px solid var(--cyan);
+  color:var(--cyan);
+  box-shadow:0 0 30px rgba(51,224,255,0.3);
+}
+
+.pause-overlay{
+  position:fixed; inset:0;
+  background:rgba(3,6,12,0.88);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:150;
+  flex-direction:column;
+  gap:16px;
+}
+.pause-overlay.open{ display:flex; }
+.pause-overlay h2{
+  font-family:var(--font-display);
+  font-size:30px;
+  letter-spacing:2px;
+  color:var(--cyan);
+}
+
+.hidden{ display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- ================= TOP BAR ================= -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">CT</div>
+    <div class="brand-text">
+      <h1>Control Tower</h1>
+      <span>AI Supply Chain Ops</span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn active" id="soundBtn" title="Toggle sound">🔊</button>
+    <button class="icon-btn" id="helpBtn" title="Help">❓</button>
+    <button class="icon-btn" id="pauseBtn" title="Pause">⏸</button>
+    <div class="timer-chip" id="timerChip">03:00</div>
+  </div>
+</div>
+
+<div class="status-strip" id="statusStrip">
+  <span>OPERATOR: <b>Head of Operations</b></span>
+  <span>SCORE: <b id="scoreStripVal">0</b></span>
+  <span>RESOLVED: <b id="resolvedStripVal">0</b></span>
+  <span>STATUS: <b id="statusStripVal" style="color:var(--green);">STANDBY</b></span>
+</div>
+
+<div class="app">
+
+  <!-- ================= KPI GRID ================= -->
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- ================= MAIN GRID ================= -->
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-head">
+        <h2><span class="live-dot"></span> Active Alerts</h2>
+        <span class="panel-sub" id="alertCountLabel">0 active</span>
+      </div>
+      <div class="alert-feed" id="alertFeed">
+        <div class="empty-state" id="startState">
+          <div class="glyph-big">🛰️</div>
+          <h1 style="font-size:26px;">Ready to take command?</h1>
+          <p style="max-width:460px;">You are the Head of Operations for a global supply network. Alerts will start firing the moment you launch the shift. Triage fast, protect revenue, and keep the network healthy for 3 minutes.</p>
+          <button class="btn-primary" id="startBtn" style="margin-top:10px;">Start Shift</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Event Log</h2>
+        <span class="panel-sub">real-time</span>
+      </div>
+      <div class="log-feed" id="logFeed"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= HELP MODAL ================= -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Mission Briefing</h2>
+      <button class="modal-close" id="closeHelp">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>You are the <b>Head of Operations</b> for a global supply chain. For 3 minutes, alerts will stream in from across your network — ports, factories, warehouses, and carriers. Your job is to triage and resolve them before impact escalates.</p>
+      <h3>How it works</h3>
+      <ul>
+        <li>Each alert has a <b>priority</b>, a <b>countdown</b>, and a <b>business impact</b>.</li>
+        <li>Pick an action button to resolve it. The best action improves KPIs and score; weak or wrong actions hurt them.</li>
+        <li>If an alert's timer runs out unresolved, it auto-escalates and damages your KPIs.</li>
+        <li>Some choices have delayed consequences that show up seconds later in the Event Log.</li>
+        <li>As time passes, alerts arrive faster and more can be active at once.</li>
+      </ul>
+      <h3>KPIs to protect</h3>
+      <ul>
+        <li>Service Level, Customer Satisfaction, Inventory Health, Transportation Efficiency — keep these high.</li>
+        <li>Operating Cost — keep this low.</li>
+        <li>Revenue Protected and Score — keep these climbing.</li>
+      </ul>
+      <h3>Scoring</h3>
+      <p>Your final grade (A+ to D) is based on your score and average KPI health at the end of the shift.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= RESULTS MODAL ================= -->
+<div class="modal-overlay" id="resultsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Shift Debrief</h2>
+      <div></div>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <div class="grade-badge" id="gradeBadge">A</div>
+      <p id="summaryText" style="margin-bottom:6px;"></p>
+      <div class="results-grid" id="resultsGrid"></div>
+      <button class="btn-primary" id="playAgainBtn" style="margin-top:6px;">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PAUSE OVERLAY ================= -->
+<div class="pause-overlay" id="pauseOverlay">
+  <h2>SHIFT PAUSED</h2>
+  <button class="btn-primary" id="resumeBtn">Resume Operations</button>
+</div>
+
+<script>
+/* ================================================================
+   AI SUPPLY CHAIN CONTROL TOWER
+   Vanilla JS game logic
+   ================================================================ */
+
+/* ---------------- STATE ---------------- */
+const GAME_DURATION = 180; // seconds
+let state = null;
+let tickInterval = null;
+let spawnTimeout = null;
+let soundOn = true;
+let paused = false;
+
+const KPI_DEFS = [
+  { key:'service',   label:'Service Level',            unit:'%',  start:92, min:0, max:100, dir:'high' },
+  { key:'csat',       label:'Customer Satisfaction',     unit:'%',  start:88, min:0, max:100, dir:'high' },
+  { key:'inventory',  label:'Inventory Health',          unit:'%',  start:85, min:0, max:100, dir:'high' },
+  { key:'transport',  label:'Transportation Efficiency', unit:'%',  start:90, min:0, max:100, dir:'high' },
+  { key:'cost',       label:'Operating Cost',            unit:'idx',start:100, min:60, max:200, dir:'low'  },
+  { key:'revenue',    label:'Revenue Protected',         unit:'k',  start:0,  min:0, max:99999, dir:'high' },
+  { key:'score',      label:'Score',                     unit:'pt', start:0,  min:0, max:99999, dir:'high' },
+];
+
+/* ---------------- ALERT DEFINITIONS ---------------- */
+/*
+  Each alert type defines a pool of possible actions.
+  Each action has: label, effects{kpiKey:delta}, logType, logText, delayedEffect (optional), isBest, isWorst
+*/
+const ALERT_TYPES = [
+  {
+    icon:'🚨', title:'Port Congestion',
+    desc:'Container vessel queue at the destination port has tripled. Discharge delays expected across multiple lanes.',
+    impact:'High delay risk on 3 inbound lanes',
+    actions:[
+      { label:'Approve Air Freight', best:true,  effects:{service:+6, csat:+5, transport:+2, cost:-14, revenue:+18, score:+30}, log:'Air freight rerouted priority cargo — congestion bypassed.' },
+      { label:'Reroute Trucks',      best:false, effects:{service:+2, transport:+3, cost:-6, revenue:+6, score:+12}, log:'Ground routes adjusted, partial relief only.' },
+      { label:'Ignore',              worst:true, effects:{service:-10, csat:-8, revenue:-15, score:-15}, log:'Port congestion ignored — shipments stuck, customers escalating.',
+        delayed:{ after:5, effects:{csat:-4, revenue:-6}, log:'Delayed fallout: 4 accounts filed formal complaints.' } },
+    ]
+  },
+  {
+    icon:'🚨', title:'Supplier Delay',
+    desc:'Tier-1 supplier reports a 5-day slip on a critical component batch feeding two production lines.',
+    impact:'Line stoppage risk in 48h',
+    actions:[
+      { label:'Use Backup Supplier', best:true,  effects:{service:+5, inventory:+7, cost:-10, revenue:+14, score:+28}, log:'Backup supplier activated — production line protected.' },
+      { label:'Delay Decision',      best:false, effects:{inventory:-4, cost:-3, score:-4}, log:'Decision deferred — risk carried forward.',
+        delayed:{ after:6, effects:{service:-6, inventory:-6}, log:'Delayed fallout: component shortage hit the line as feared.' } },
+      { label:'Ignore',              worst:true, effects:{service:-9, inventory:-9, revenue:-12, score:-14}, log:'Supplier delay ignored — production line stopped for 6 hours.' },
+    ]
+  },
+  {
+    icon:'🚨', title:'Truck Breakdown',
+    desc:'A refrigerated truck broke down on I-40 carrying a temperature-sensitive last-mile delivery.',
+    impact:'Cold-chain shipment at risk',
+    actions:[
+      { label:'Reroute Trucks',      best:true,  effects:{transport:+7, csat:+4, cost:-8, revenue:+10, score:+22}, log:'Nearby fleet rerouted — cold-chain shipment saved.' },
+      { label:'Expedite Shipment',   best:false, effects:{transport:+3, cost:-6, score:+8}, log:'Replacement truck dispatched, some delay remains.' },
+      { label:'Ignore',              worst:true, effects:{transport:-8, csat:-7, revenue:-10, score:-12}, log:'Truck breakdown ignored — cargo spoiled in transit.' },
+    ]
+  },
+  {
+    icon:'🚨', title:'Warehouse Running Out of Stock',
+    desc:'Regional distribution center is projected to stock out of a top SKU within 12 hours.',
+    impact:'Stockout on high-velocity SKU',
+    actions:[
+      { label:'Transfer Inventory',  best:true,  effects:{inventory:+8, service:+4, cost:-5, revenue:+12, score:+24}, log:'Inventory transferred from adjacent DC — stockout avoided.' },
+      { label:'Increase Production', best:false, effects:{inventory:+3, cost:-9, score:+6}, log:'Production ramp started, but won\u2019t land before the gap.' },
+      { label:'Ignore',              worst:true, effects:{inventory:-9, service:-8, revenue:-11, score:-13}, log:'Warehouse ignored — SKU stocked out, orders backlogged.' },
+    ]
+  },
+  {
+    icon:'🚨', title:'Customs Inspection',
+    desc:'A high-value container has been flagged for random customs inspection at the border.',
+    impact:'48h clearance delay possible',
+    actions:[
+      { label:'Expedite Shipment',   best:true,  effects:{service:+5, transport:+3, cost:-6, revenue:+10, score:+20}, log:'Expedited clearance paperwork filed — delay minimized.' },
+      { label:'Delay Decision',      best:false, effects:{cost:-2, score:-2}, log:'Waiting on customs — no action taken yet.',
+        delayed:{ after:5, effects:{service:-5, revenue:-6}, log:'Delayed fallout: inspection extended, delivery window missed.' } },
+      { label:'Ignore',              worst:true, effects:{service:-7, transport:-5, revenue:-9, score:-11}, log:'Customs issue ignored — container held indefinitely.' },
+    ]
+  },
+  {
+    icon:'🚨', title:'Demand Spike',
+    desc:'A viral social trend has spiked demand for one SKU by 400% in the last two hours.',
+    impact:'Potential stockout & lost revenue',
+    actions:[
+      { label:'Increase Production', best:true,  effects:{inventory:+6, revenue:+20, cost:-10, score:+26}, log:'Production surged to meet demand spike — revenue captured.' },
+      { label:'Transfer Inventory',  best:false, effects:{inventory:+3, revenue:+9, score:+10}, log:'Stock shifted from slower regions, partial coverage.' },
+      { label:'Ignore',              worst:true, effects:{inventory:-6, csat:-6, revenue:-16, score:-13}, log:'Demand spike ignored — massive missed sales opportunity.' },
+    ]
+  },
+  {
+    icon:'🚨', title:'Factory Machine Failure',
+    desc:'A critical stamping machine has gone offline at the primary assembly plant.',
+    impact:'Production capacity down 35%',
+    actions:[
+      { label:'Increase Production', best:false, effects:{inventory:+2, cost:-12, score:+6}, log:'Remaining lines pushed harder — only partial offset.' },
+      { label:'Use Backup Supplier', best:true,  effects:{inventory:+7, service:+5, cost:-9, revenue:+13, score:+24}, log:'Contract manufacturer activated — capacity gap covered.' },
+      { label:'Ignore',              worst:true, effects:{inventory:-8, service:-7, revenue:-12, score:-13}, log:'Machine failure ignored — output collapsed for the day.' },
+    ]
+  },
+  {
+    icon:'🚨', title:'Weather Disruption',
+    desc:'A severe storm system is disrupting air and ground routes across a major hub region.',
+    impact:'Multi-lane transit delays',
+    actions:[
+      { label:'Reroute Trucks',      best:true,  effects:{transport:+7, service:+3, cost:-8, revenue:+11, score:+22}, log:'Fleet rerouted around storm corridor — transit protected.' },
+      { label:'Delay Decision',      best:false, effects:{transport:-2, score:-2}, log:'Waiting out the storm — status uncertain.',
+        delayed:{ after:5, effects:{transport:-6, service:-4}, log:'Delayed fallout: storm worsened, multiple lanes now closed.' } },
+      { label:'Ignore',              worst:true, effects:{transport:-9, csat:-6, revenue:-10, score:-12}, log:'Weather disruption ignored — fleet stranded en route.' },
+    ]
+  },
+  {
+    icon:'🚨', title:'Wrong Inventory Count',
+    desc:'A cycle count audit reveals a major SKU discrepancy versus the system of record at a key DC.',
+    impact:'Planning accuracy compromised',
+    actions:[
+      { label:'Transfer Inventory',  best:false, effects:{inventory:+3, cost:-4, score:+7}, log:'Buffer stock moved in while count is corrected.' },
+      { label:'Increase Production', best:true,  effects:{inventory:+7, service:+4, cost:-7, revenue:+9, score:+20}, log:'Reconciliation run and safety production scheduled — gap closed.' },
+      { label:'Ignore',              worst:true, effects:{inventory:-7, service:-6, revenue:-8, score:-11}, log:'Count discrepancy ignored — downstream orders misallocated.' },
+    ]
+  },
+  {
+    icon:'🚨', title:'Damaged Shipment',
+    desc:'A high-value shipment arrived at the DC with visible pallet damage from in-transit mishandling.',
+    impact:'Customer order at risk',
+    actions:[
+      { label:'Expedite Shipment',   best:true,  effects:{csat:+6, service:+4, cost:-8, revenue:+10, score:+21}, log:'Replacement shipment expedited — customer kept whole.' },
+      { label:'Transfer Inventory',  best:false, effects:{csat:+2, inventory:+2, cost:-5, score:+9}, log:'Substitute stock pulled from nearby DC, partial fix.' },
+      { label:'Ignore',              worst:true, effects:{csat:-9, service:-6, revenue:-10, score:-12}, log:'Damaged shipment ignored — customer order cancelled.' },
+    ]
+  },
+];
+
+/* ---------------- INIT KPI GRID ---------------- */
+function buildKpiGrid(){
+  const grid = document.getElementById('kpiGrid');
+  grid.innerHTML = '';
+  KPI_DEFS.forEach(def=>{
+    const card = document.createElement('div');
+    card.className = 'kpi-card';
+    card.id = 'kpi-' + def.key;
+    card.innerHTML = `
+      <div class="kpi-delta" id="delta-${def.key}"></div>
+      <div class="kpi-label">${def.label}</div>
+      <div class="kpi-value" id="val-${def.key}">--<small>${def.unit}</small></div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="bar-${def.key}"></div></div>
+    `;
+    grid.appendChild(card);
+  });
+}
+buildKpiGrid();
+
+/* ---------------- STATE INIT ---------------- */
+function freshState(){
+  const kpis = {};
+  KPI_DEFS.forEach(d=> kpis[d.key] = d.start);
+  return {
+    kpis,
+    timeLeft: GAME_DURATION,
+    running: false,
+    activeAlerts: [], // {id, def, action(chosenLabel), spawnedAt, expiresAt(seconds left), resolved}
+    resolvedCount: 0,
+    correctCount: 0,
+    wrongCount: 0,
+    nextAlertId: 1,
+    spawnIntervalMs: 4200,
+  };
+}
+
+/* ---------------- KPI RENDER ---------------- */
+function renderKpis(deltas){
+  KPI_DEFS.forEach(def=>{
+    const raw = state.kpis[def.key];
+    const clamped = Math.max(def.min, Math.min(def.max, raw));
+    state.kpis[def.key] = clamped;
+    const valEl = document.getElementById('val-' + def.key);
+    const barEl = document.getElementById('bar-' + def.key);
+    const cardEl = document.getElementById('kpi-' + def.key);
+    const deltaEl = document.getElementById('delta-' + def.key);
+
+    let display = Math.round(clamped);
+    valEl.innerHTML = display + '<small>' + def.unit + '</small>';
+
+    // bar percent
+    let pct;
+    if(def.key === 'revenue' || def.key === 'score'){
+      pct = Math.min(100, (clamped / 400) * 100);
+    } else if(def.dir === 'low'){
+      pct = Math.max(0, 100 - ((clamped - def.min) / (def.max - def.min) * 100));
+    } else {
+      pct = ((clamped - def.min) / (def.max - def.min)) * 100;
+    }
+    barEl.style.width = Math.max(2, Math.min(100, pct)) + '%';
+
+    // color state
+    cardEl.classList.remove('warn','crit','good');
+    if(def.key !== 'revenue' && def.key !== 'score'){
+      if(def.dir === 'high'){
+        if(clamped < 50) cardEl.classList.add('crit');
+        else if(clamped < 75) cardEl.classList.add('warn');
+        else cardEl.classList.add('good');
+      } else {
+        if(clamped > 150) cardEl.classList.add('crit');
+        else if(clamped > 120) cardEl.classList.add('warn');
+        else cardEl.classList.add('good');
+      }
+      barEl.style.background = cardEl.classList.contains('crit') ? 'var(--red)' :
+                                cardEl.classList.contains('warn') ? 'var(--orange)' : 'var(--cyan)';
+    } else {
+      barEl.style.background = 'var(--green)';
+    }
+
+    // delta popup
+    if(deltas && deltas[def.key]){
+      const d = deltas[def.key];
+      deltaEl.textContent = (d > 0 ? '+' : '') + Math.round(d);
+      deltaEl.classList.remove('pos','neg');
+      deltaEl.classList.add(d > 0 ? 'pos' : 'neg', 'show');
+      setTimeout(()=> deltaEl.classList.remove('show'), 1200);
+    }
+  });
+
+  document.getElementById('scoreStripVal').textContent = Math.round(state.kpis.score);
+  document.getElementById('resolvedStripVal').textContent = state.resolvedCount;
+}
+
+/* ---------------- LOG ---------------- */
+function pushLog(text, type){
+  const feed = document.getElementById('logFeed');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry ' + (type || 'neutral');
+  const t = formatTime(GAME_DURATION - state.timeLeft);
+  entry.innerHTML = `<span class="ts">[${t}]</span>${text}`;
+  feed.prepend(entry);
+  while(feed.children.length > 60){ feed.removeChild(feed.lastChild); }
+}
+
+function formatTime(sec){
+  const m = Math.floor(sec/60).toString().padStart(2,'0');
+  const s = Math.floor(sec%60).toString().padStart(2,'0');
+  return m + ':' + s;
+}
+
+/* ---------------- APPLY EFFECTS ---------------- */
+function applyEffects(effects){
+  const deltas = {};
+  Object.keys(effects).forEach(k=>{
+    state.kpis[k] = (state.kpis[k] || 0) + effects[k];
+    deltas[k] = effects[k];
+  });
+  renderKpis(deltas);
+}
+
+/* ---------------- ALERT SPAWNING ---------------- */
+function spawnAlert(){
+  if(!state.running) return;
+  const def = ALERT_TYPES[Math.floor(Math.random()*ALERT_TYPES.length)];
+  const priorities = ['critical','high','medium'];
+  const priority = priorities[Math.floor(Math.random()*priorities.length)];
+  const duration = priority === 'critical' ? 16 : priority === 'high' ? 22 : 28;
+
+  const alert = {
+    id: state.nextAlertId++,
+    def,
+    priority,
+    duration,
+    timeLeft: duration,
+    resolved: false,
+  };
+  state.activeAlerts.push(alert);
+  renderAlert(alert);
+  pushLog(`${def.icon} New alert: <b>${def.title}</b> (${priority.toUpperCase()})`, 'system');
+  updateAlertCount();
+  removeEmptyState();
+
+  // schedule next spawn — gets faster over time
+  const elapsedRatio = 1 - (state.timeLeft / GAME_DURATION);
+  const minGap = 1800;
+  const baseGap = 4200 - elapsedRatio * 2600;
+  const gap = Math.max(minGap, baseGap) + Math.random()*1200;
+  spawnTimeout = setTimeout(spawnAlert, gap);
+}
+
+function removeEmptyState(){
+  const s = document.getElementById('startState');
+  if(s) s.remove();
+}
+
+/* ---------------- ALERT RENDER ---------------- */
+function renderAlert(alert){
+  const feed = document.getElementById('alertFeed');
+  const card = document.createElement('div');
+  card.className = `alert-card priority-${alert.priority}` + (alert.priority === 'critical' ? ' pulse' : '');
+  card.id = 'alert-' + alert.id;
+
+  const prioLabel = alert.priority === 'critical' ? 'Critical' : alert.priority === 'high' ? 'High' : 'Medium';
+
+  let actionsHtml = alert.def.actions.map(a=>{
+    return `<button class="act-btn" data-alert="${alert.id}" data-label="${a.label}">${a.label}</button>`;
+  }).join('') + `<button class="act-btn delay" data-alert="${alert.id}" data-label="Delay Decision" ${alert.def.actions.some(a=>a.label==='Delay Decision') ? 'data-dup="1"' : ''}>Delay Decision</button>`;
+
+  // avoid duplicate Delay Decision button if already present in def
+  if(alert.def.actions.some(a=>a.label==='Delay Decision')){
+    actionsHtml = alert.def.actions.map(a=>{
+      return `<button class="act-btn ${a.label==='Ignore'?'ignore':''} ${a.label==='Delay Decision'?'delay':''}" data-alert="${alert.id}" data-label="${a.label}">${a.label}</button>`;
+    }).join('');
+  } else {
+    actionsHtml = alert.def.actions.map(a=>{
+      return `<button class="act-btn ${a.label==='Ignore'?'ignore':''}" data-alert="${alert.id}" data-label="${a.label}">${a.label}</button>`;
+    }).join('');
+  }
+
+  card.innerHTML = `
+    <div class="alert-top">
+      <div class="alert-title">${alert.def.icon} ${alert.def.title}</div>
+    </div>
+    <div class="alert-desc">${alert.def.desc}</div>
+    <div class="alert-meta">
+      <span class="tag prio-${alert.priority}">${prioLabel} priority</span>
+      <span class="tag impact">${alert.def.impact}</span>
+      <span class="tag timer" id="timer-${alert.id}">${alert.timeLeft}s left</span>
+    </div>
+    <div class="alert-actions">${actionsHtml}</div>
+    <div class="alert-timebar"><div class="alert-timebar-fill" id="timebar-${alert.id}" style="width:100%;"></div></div>
+  `;
+  feed.prepend(card);
+
+  card.querySelectorAll('.act-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> handleAction(alert.id, btn.dataset.label));
+  });
+}
+
+function updateAlertCount(){
+  document.getElementById('alertCountLabel').textContent = state.activeAlerts.filter(a=>!a.resolved).length + ' active';
+}
+
+/* ---------------- ACTION HANDLING ---------------- */
+function handleAction(alertId, label){
+  const alert = state.activeAlerts.find(a=>a.id===alertId && !a.resolved);
+  if(!alert || !state.running) return;
+
+  const actionDef = alert.def.actions.find(a=>a.label === label);
+  if(!actionDef) return;
+
+  alert.resolved = true;
+  state.resolvedCount++;
+  if(actionDef.best) state.correctCount++;
+  else if(actionDef.worst) state.wrongCount++;
+
+  applyEffects(actionDef.effects);
+  pushLog(`${alert.def.icon} <b>${alert.def.title}</b> \u2192 ${label}: ${actionDef.log}`,
+    actionDef.best ? 'good' : (actionDef.worst ? 'bad' : 'neutral'));
+
+  if(actionDef.delayed && state.running){
+    setTimeout(()=>{
+      if(!state.running) return;
+      applyEffects(actionDef.delayed.effects);
+      pushLog(`\u23f3 ${actionDef.delayed.log}`, 'bad');
+    }, actionDef.delayed.after * 1000);
+  }
+
+  removeAlertCard(alert.id);
+}
+
+function removeAlertCard(id){
+  const el = document.getElementById('alert-' + id);
+  if(el){
+    el.style.transition = 'opacity .25s ease, transform .25s ease';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(20px)';
+    setTimeout(()=> el.remove(), 250);
+  }
+  state.activeAlerts = state.activeAlerts.filter(a=>a.id !== id);
+  updateAlertCount();
+}
+
+/* ---------------- ALERT EXPIRY ---------------- */
+function tickAlerts(){
+  state.activeAlerts.forEach(alert=>{
+    if(alert.resolved) return;
+    alert.timeLeft -= 1;
+    const timerEl = document.getElementById('timer-' + alert.id);
+    const barEl = document.getElementById('timebar-' + alert.id);
+    if(timerEl) timerEl.textContent = Math.max(0, alert.timeLeft) + 's left';
+    if(barEl) barEl.style.width = Math.max(0, (alert.timeLeft/alert.duration)*100) + '%';
+
+    if(alert.timeLeft <= 0){
+      alert.resolved = true;
+      state.wrongCount++;
+      // escalation penalty — worse than picking "Ignore" deliberately
+      const penalty = alert.priority === 'critical' ? { service:-9, csat:-8, revenue:-14, score:-16 } :
+                       alert.priority === 'high' ? { service:-6, csat:-5, revenue:-9, score:-11 } :
+                       { service:-4, csat:-3, revenue:-5, score:-6 };
+      applyEffects(penalty);
+      pushLog(`\u26a0\ufe0f <b>${alert.def.title}</b> escalated unresolved — network impact absorbed.`, 'bad');
+      removeAlertCard(alert.id);
+    }
+  });
+}
+
+/* ---------------- MAIN TIMER TICK ---------------- */
+function mainTick(){
+  if(!state.running) return;
+  state.timeLeft -= 1;
+  tickAlerts();
+
+  const chip = document.getElementById('timerChip');
+  chip.textContent = formatTime(state.timeLeft);
+  chip.classList.toggle('low', state.timeLeft <= 20);
+
+  if(state.timeLeft <= 0){
+    endGame();
+  }
+}
+
+/* ---------------- GAME CONTROL ---------------- */
+function startGame(){
+  state = freshState();
+  state.running = true;
+  document.getElementById('alertFeed').innerHTML = '';
+  document.getElementById('logFeed').innerHTML = '';
+  document.getElementById('statusStripVal').textContent = 'LIVE';
+  document.getElementById('statusStripVal').style.color = 'var(--green)';
+  renderKpis();
+  pushLog('Shift started. Good luck, Head of Operations.', 'system');
+  updateAlertCount();
+
+  tickInterval = setInterval(mainTick, 1000);
+  spawnTimeout = setTimeout(spawnAlert, 1200);
+}
+
+function endGame(){
+  state.running = false;
+  clearInterval(tickInterval);
+  clearTimeout(spawnTimeout);
+  document.getElementById('statusStripVal').textContent = 'SHIFT ENDED';
+  document.getElementById('statusStripVal').style.color = 'var(--text-mid)';
+
+  // clear remaining alert cards
+  state.activeAlerts.forEach(a=> removeAlertCard(a.id));
+
+  showResults();
+}
+
+function computeGrade(){
+  const kpiAvg = (state.kpis.service + state.kpis.csat + state.kpis.inventory + state.kpis.transport) / 4;
+  const costFactor = Math.max(0, 100 - (state.kpis.cost - 100)); // lower cost is better
+  const overall = (kpiAvg * 0.55) + (Math.min(100, state.kpis.score/6) * 0.35) + (costFactor * 0.10);
+
+  if(overall >= 90) return 'A+';
+  if(overall >= 80) return 'A';
+  if(overall >= 68) return 'B';
+  if(overall >= 52) return 'C';
+  return 'D';
+}
+
+function summaryForGrade(g){
+  switch(g){
+    case 'A+': return 'Flawless command of the network. Every major disruption was neutralized before it hit customers, and margins stayed intact.';
+    case 'A':  return 'Strong operational leadership. Most disruptions were handled decisively, keeping the network resilient.';
+    case 'B':  return 'Solid shift overall, though a few slow calls let avoidable damage through. Room to tighten triage speed.';
+    case 'C':  return 'The network survived, but reactive decisions and missed windows drove up cost and dented satisfaction.';
+    default:   return 'A rough shift — too many alerts escalated unresolved. The network absorbed heavy, avoidable damage.';
+  }
+}
+
+function showResults(){
+  const grade = computeGrade();
+  document.getElementById('gradeBadge').textContent = grade;
+  const badge = document.getElementById('gradeBadge');
+  badge.style.borderColor = grade === 'D' ? 'var(--red)' : grade === 'C' ? 'var(--orange)' : (grade === 'A+' ? 'var(--green)' : 'var(--cyan)');
+  badge.style.color = badge.style.borderColor;
+  document.getElementById('summaryText').textContent = summaryForGrade(grade);
+
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = `
+    <div class="result-tile"><div class="rl">Final Score</div><div class="rv">${Math.round(state.kpis.score)}</div></div>
+    <div class="result-tile"><div class="rl">Alerts Resolved</div><div class="rv">${state.resolvedCount}</div></div>
+    <div class="result-tile"><div class="rl">Correct Decisions</div><div class="rv" style="color:var(--green);">${state.correctCount}</div></div>
+    <div class="result-tile"><div class="rl">Wrong Decisions</div><div class="rv" style="color:var(--red);">${state.wrongCount}</div></div>
+    <div class="result-tile"><div class="rl">Service Level</div><div class="rv">${Math.round(state.kpis.service)}%</div></div>
+    <div class="result-tile"><div class="rl">Csat</div><div class="rv">${Math.round(state.kpis.csat)}%</div></div>
+    <div class="result-tile"><div class="rl">Inventory Health</div><div class="rv">${Math.round(state.kpis.inventory)}%</div></div>
+    <div class="result-tile"><div class="rl">Transport Efficiency</div><div class="rv">${Math.round(state.kpis.transport)}%</div></div>
+    <div class="result-tile"><div class="rl">Operating Cost Idx</div><div class="rv">${Math.round(state.kpis.cost)}</div></div>
+    <div class="result-tile"><div class="rl">Revenue Protected</div><div class="rv">$${Math.round(state.kpis.revenue)}k</div></div>
+  `;
+
+  document.getElementById('resultsModal').classList.add('open');
+}
+
+/* ---------------- UI WIRING ---------------- */
+document.addEventListener('click', (e)=>{
+  if(e.target.id === 'startBtn') startGame();
+});
+
+document.getElementById('helpBtn').addEventListener('click', ()=>{
+  document.getElementById('helpModal').classList.add('open');
+});
+document.getElementById('closeHelp').addEventListener('click', ()=>{
+  document.getElementById('helpModal').classList.remove('open');
+});
+document.getElementById('helpModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'helpModal') e.currentTarget.classList.remove('open');
+});
+
+document.getElementById('soundBtn').addEventListener('click', (e)=>{
+  soundOn = !soundOn;
+  e.currentTarget.classList.toggle('active', soundOn);
+  e.currentTarget.textContent = soundOn ? '🔊' : '🔇';
+});
+
+document.getElementById('pauseBtn').addEventListener('click', ()=>{
+  if(!state || !state.running) return;
+  paused = true;
+  state.running = false;
+  clearInterval(tickInterval);
+  clearTimeout(spawnTimeout);
+  document.getElementById('pauseOverlay').classList.add('open');
+});
+
+document.getElementById('resumeBtn').addEventListener('click', ()=>{
+  if(!state) return;
+  paused = false;
+  state.running = true;
+  document.getElementById('pauseOverlay').classList.remove('open');
+  tickInterval = setInterval(mainTick, 1000);
+  spawnTimeout = setTimeout(spawnAlert, 1500);
+});
+
+document.getElementById('playAgainBtn').addEventListener('click', ()=>{
+  document.getElementById('resultsModal').classList.remove('open');
+  document.getElementById('alertFeed').innerHTML = `
+    <div class="empty-state" id="startState">
+      <div class="glyph-big">🛰️</div>
+      <h1 style="font-size:26px;">Ready for another shift?</h1>
+      <p style="max-width:460px;">The network resets. New disruptions, same mission: protect service, satisfaction, and revenue.</p>
+      <button class="btn-primary" id="startBtn" style="margin-top:10px;">Start Shift</button>
+    </div>
+  `;
+  document.getElementById('logFeed').innerHTML = '';
+  document.getElementById('timerChip').textContent = formatTime(GAME_DURATION);
+  document.getElementById('timerChip').classList.remove('low');
+  document.getElementById('statusStripVal').textContent = 'STANDBY';
+  document.getElementById('statusStripVal').style.color = 'var(--green)';
+  state = freshState();
+  renderKpis();
+  updateAlertCount();
+});
+
+/* ---------------- INITIAL RENDER ---------------- */
+state = freshState();
+renderKpis();
+document.getElementById('timerChip').textContent = formatTime(GAME_DURATION);
+</script>
+
+</body>
+</html>
