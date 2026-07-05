@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🧩 Prompt Puzzle — Master AI Prompting Through Play</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root{
+    --bg1:#0b0f1a; --bg2:#131a2b; --card:#161d2f; --card2:#1c2540;
+    --accent:#7c5cff; --accent2:#00d9c8; --warn:#ff5c7a; --gold:#ffc247;
+    --text:#e9ecf7; --sub:#9aa4c0; --good:#3ddc97; --bad:#ff5c7a;
+    --radius:16px;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background: radial-gradient(circle at 20% 0%, #1a2140 0%, var(--bg1) 55%) fixed;
+    color:var(--text); overflow-x:hidden;
+  }
+  #app{max-width:1100px;margin:0 auto;padding:24px 20px 60px;}
+  h1,h2,h3{margin:0 0 6px;}
+  .title-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+  .brand{font-size:26px;font-weight:800;letter-spacing:.3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:var(--card2);
+    border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--sub);}
+  .card{
+    background:linear-gradient(160deg,var(--card),var(--card2));
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:26px; margin-bottom:20px; animation:fadeUp .5s ease;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  button{
+    font-family:inherit; cursor:pointer; border:none; border-radius:12px;
+    padding:12px 22px; font-size:15px; font-weight:600; color:#fff;
+    background:linear-gradient(135deg,var(--accent),#5b3df0);
+    transition:transform .15s ease, box-shadow .15s ease, opacity .15s;
+    box-shadow:0 6px 18px rgba(124,92,255,.35);
+  }
+  button:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(124,92,255,.5);}
+  button:active{transform:translateY(0);}
+  button.secondary{background:var(--card2);box-shadow:none;border:1px solid rgba(255,255,255,.1);}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,.15);box-shadow:none;color:var(--sub);}
+  button:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+  select, input[type=text]{
+    background:var(--bg2); color:var(--text); border:1px solid rgba(255,255,255,.12);
+    border-radius:10px; padding:10px 14px; font-size:14px; font-family:inherit;
+  }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr;}}
+  .opt-card{
+    background:var(--bg2); border:2px solid rgba(255,255,255,.08); border-radius:14px;
+    padding:16px; cursor:pointer; transition:.2s; position:relative;
+  }
+  .opt-card:hover{border-color:var(--accent);transform:translateY(-3px);}
+  .opt-card.selected{border-color:var(--accent2); box-shadow:0 0 0 2px rgba(0,217,200,.3);}
+  .opt-card.correct{border-color:var(--good); box-shadow:0 0 0 2px rgba(61,220,151,.4);}
+  .opt-card.wrong{border-color:var(--bad); box-shadow:0 0 0 2px rgba(255,92,122,.4);}
+  .opt-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--sub);margin-bottom:6px;font-weight:700;}
+  .opt-text{font-size:14px;line-height:1.5;color:var(--text);white-space:pre-wrap;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;margin-left:6px;}
+  .badge.chal{background:rgba(124,92,255,.18);color:#c4b6ff;}
+  .badge.diff{background:rgba(255,194,71,.15);color:var(--gold);}
+  .badge.dom{background:rgba(0,217,200,.15);color:var(--accent2);}
+  .stat-bar{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0;}
+  .stat{background:var(--bg2);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--sub);border:1px solid rgba(255,255,255,.06);min-width:90px;text-align:center;}
+  .stat b{display:block;font-size:17px;color:var(--text);margin-top:2px;}
+  #blockBank, #dropZone{
+    min-height:120px; border-radius:14px; padding:14px; display:flex; flex-wrap:wrap; gap:10px;
+    align-content:flex-start;
+  }
+  #blockBank{background:rgba(255,255,255,.02); border:1px dashed rgba(255,255,255,.15);}
+  #dropZone{background:rgba(124,92,255,.05); border:2px dashed var(--accent); }
+  #dropZone.dragover{background:rgba(124,92,255,.15);border-color:var(--accent2);}
+  .block{
+    background:var(--card2); border:1px solid rgba(255,255,255,.12); border-radius:10px;
+    padding:10px 14px; font-size:13.5px; cursor:grab; user-select:none;
+    transition:.15s; box-shadow:0 4px 10px rgba(0,0,0,.25); max-width:100%;
+  }
+  .block:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .block.dragging{opacity:.35;}
+  .block.correct-flash{animation:flashGood .6s ease;}
+  .block.wrong-flash{animation:flashBad .6s ease;}
+  @keyframes flashGood{0%{box-shadow:0 0 0 0 rgba(61,220,151,.7);}100%{box-shadow:0 0 0 12px rgba(61,220,151,0);}}
+  @keyframes flashBad{0%{box-shadow:0 0 0 0 rgba(255,92,122,.7);}100%{box-shadow:0 0 0 12px rgba(255,92,122,0);}}
+  .zone-slot{min-width:60px;min-height:44px;}
+  #cleanArea{display:flex;flex-direction:column;gap:8px;}
+  .clean-line{
+    display:flex;align-items:center;gap:10px;background:var(--bg2);border-radius:10px;padding:10px 14px;
+    border:1px solid rgba(255,255,255,.08); cursor:pointer; transition:.15s;
+  }
+  .clean-line:hover{border-color:var(--accent);}
+  .clean-line.removed{opacity:.3; text-decoration:line-through;}
+  .clean-line .tag{font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(255,92,122,.15);color:var(--bad);font-weight:700;}
+  .clean-line.keep .tag{background:rgba(61,220,151,.15);color:var(--good);}
+  .float-note{
+    position:fixed; top:24px; right:24px; z-index:999; padding:14px 20px; border-radius:12px;
+    background:var(--card2); border:1px solid rgba(255,255,255,.1); box-shadow:var(--shadow);
+    font-size:14px; font-weight:600; animation:slideIn .35s ease, fadeOut .4s ease 2.2s forwards;
+    max-width:320px;
+  }
+  @keyframes slideIn{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+  @keyframes fadeOut{to{opacity:0;transform:translateX(30px);}}
+  .float-note.good{border-color:var(--good);color:var(--good);}
+  .float-note.bad{border-color:var(--bad);color:var(--bad);}
+  .float-note.info{border-color:var(--accent2);color:var(--accent2);}
+  progress.mainprog{width:100%;height:8px;border-radius:6px;overflow:hidden;appearance:none;border:none;}
+  progress.mainprog::-webkit-progress-bar{background:var(--bg2);border-radius:6px;}
+  progress.mainprog::-webkit-progress-value{background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:6px;}
+  .section-label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--sub);font-weight:700;margin:18px 0 8px;}
+  .principle-box{background:rgba(0,217,200,.08); border-left:3px solid var(--accent2); padding:12px 16px; border-radius:8px; font-size:13.5px; color:#c9f7f1; margin-top:12px;}
+  .compare-box{background:var(--bg2);border-radius:10px;padding:14px;font-size:13px;line-height:1.6;border:1px solid rgba(255,255,255,.07);}
+  .dna-row{display:flex;align-items:center;gap:10px;margin:8px 0;}
+  .dna-label{width:140px;font-size:12.5px;color:var(--sub);}
+  .dna-track{flex:1;height:10px;background:var(--bg2);border-radius:6px;overflow:hidden;}
+  .dna-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s ease;}
+  .dna-val{width:36px;text-align:right;font-size:12px;color:var(--sub);}
+  .rank-hero{text-align:center;padding:20px 0;}
+  .rank-score{font-size:56px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .rank-title{font-size:20px;font-weight:700;color:var(--text);margin-top:6px;}
+  .rank-sub{color:var(--sub);font-size:13px;margin-top:4px;}
+  .final-prompt-box{background:var(--bg2);border-radius:12px;padding:16px;border:1px solid rgba(124,92,255,.4);font-size:13.5px;line-height:1.6;white-space:pre-wrap;}
+  .hint-btn{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:8px 16px;font-size:13px;}
+  .hint-box{background:rgba(255,194,71,.08);border-left:3px solid var(--gold);padding:10px 14px;border-radius:8px;font-size:13px;color:#ffe6ab;margin-top:10px;}
+  .scenario-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .scenario-tabs .dot{width:12px;height:12px;border-radius:50%;background:var(--card2);border:1px solid rgba(255,255,255,.2);}
+  .scenario-tabs .dot.done{background:var(--good);border-color:var(--good);}
+  .scenario-tabs .dot.active{background:var(--accent);border-color:var(--accent);}
+  footer{text-align:center;color:var(--sub);font-size:12px;margin-top:30px;}
+  a{color:var(--accent2);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ============================ SCENARIO DATA ============================ */
+const DOMAIN = "Software Engineering";
+const DIFFICULTY = "Intermediate";
+
+const SCENARIOS = [
+{
+  id:1,
+  title:"Refactor a Legacy Function",
+  challenge:"build",
+  desiredOutput:"A refactored, well-documented version of a messy legacy JavaScript function with improved readability and error handling.",
+  correctBlocks:[
+    "Act as a senior JavaScript engineer performing a code review.",
+    "Refactor the following function for readability, and add input validation: [paste function].",
+    "Preserve the original behavior and function signature.",
+    "Add JSDoc comments explaining parameters and return value.",
+    "Return only the refactored code in a single code block."
+  ],
+  distractorBlocks:[
+    "Make it shorter no matter what.",
+    "Rewrite it in Python instead.",
+    "Ignore edge cases to save time.",
+    "Add unnecessary design patterns for complexity."
+  ],
+  weakPrompt:"Fix this code.",
+  optimizedPrompt:"Act as a senior JavaScript engineer performing a code review. Refactor the following function for readability, and add input validation: [paste function]. Preserve the original behavior and function signature. Add JSDoc comments explaining parameters and return value. Return only the refactored code in a single code block.",
+  overEngineeredPrompt:"Act as a world-class 10x principal staff engineer with 30 years of experience across every language ever invented. Refactor this function using SOLID, DRY, KISS, YAGNI, hexagonal architecture, domain-driven design, and quantum-resistant naming conventions, then write a 2000-word essay justifying every character changed, then provide 5 alternative refactors, then rank them, then explain why you ranked them that way in a table with emojis.",
+  weakOutput:"Here's a fix: [changes a variable name, doesn't address validation or readability, may break behavior].",
+  optimizedOutput:"A clean refactored function with input validation, JSDoc comments, preserved behavior, returned in a single well-formatted code block.",
+  principle:"Specify role, constraints, and output format — vague requests like 'fix this' give the model no target to optimize toward."
+},
+{
+  id:2,
+  title:"Debugging a Null Pointer Exception",
+  challenge:"build",
+  desiredOutput:"A step-by-step root-cause diagnosis of a NullPointerException with a proposed fix and a regression test.",
+  correctBlocks:[
+    "Act as a debugging assistant specialized in Java backend systems.",
+    "Here is the stack trace and relevant code: [paste stack trace + code].",
+    "Identify the root cause of the NullPointerException step by step.",
+    "Propose a minimal fix that doesn't change unrelated logic.",
+    "Include one JUnit test that would have caught this bug."
+  ],
+  distractorBlocks:[
+    "Just tell me to add a null check everywhere.",
+    "Rewrite the entire codebase to avoid this class of bug.",
+    "Explain what NullPointerException means in general terms only.",
+    "Add 10 unrelated performance optimizations."
+  ],
+  weakPrompt:"Why do I get a null pointer error?",
+  optimizedPrompt:"Act as a debugging assistant specialized in Java backend systems. Here is the stack trace and relevant code: [paste stack trace + code]. Identify the root cause of the NullPointerException step by step. Propose a minimal fix that doesn't change unrelated logic. Include one JUnit test that would have caught this bug.",
+  overEngineeredPrompt:"Act as an omniscient debugging god who has fixed every bug in human history. Analyze this NullPointerException using formal verification, static analysis, dynamic analysis, chaos engineering principles, and a full Bayesian probability tree of every possible cause, then write a postmortem document, an incident report, a root cause analysis in 5-whys format, and a company-wide policy change proposal.",
+  weakOutput:"You probably have a null value somewhere. Add a null check.",
+  optimizedOutput:"A precise trace to the exact line causing the null, a minimal targeted fix, and a JUnit test verifying the fix.",
+  principle:"Providing context (stack trace + code) and scoping the fix ('minimal', 'doesn't change unrelated logic') prevents scope creep and vague answers."
+},
+{
+  id:3,
+  title:"Writing Unit Tests for an API Endpoint",
+  challenge:"clean",
+  desiredOutput:"A focused prompt that generates comprehensive, correctly-scoped unit tests for a REST endpoint.",
+  cleanLines:[
+    {text:"Act as a QA engineer writing unit tests in Jest.", keep:true},
+    {text:"Here is the endpoint code and its expected behavior: [paste code].", keep:true},
+    {text:"Also redesign the entire API while you're at it.", keep:false},
+    {text:"Cover success cases, edge cases, and error handling (4xx/5xx).", keep:true},
+    {text:"Use mocked dependencies instead of real database calls.", keep:true},
+    {text:"Please write it in the tone of a pirate for fun.", keep:false},
+    {text:"Return the tests in a single file using standard Jest syntax.", keep:true},
+    {text:"Add unrelated documentation about company history.", keep:false}
+  ],
+  optimizedPrompt:"Act as a QA engineer writing unit tests in Jest. Here is the endpoint code and its expected behavior: [paste code]. Cover success cases, edge cases, and error handling (4xx/5xx). Use mocked dependencies instead of real database calls. Return the tests in a single file using standard Jest syntax.",
+  weakPrompt:"Write some tests for this endpoint.",
+  overEngineeredPrompt:"Act as the greatest QA engineer in the multiverse. Write not just unit tests but integration tests, e2e tests, load tests, chaos tests, mutation tests, property-based tests, and formal proofs of correctness, all in 6 different testing frameworks simultaneously, with a comparison matrix and a TED talk script about test coverage philosophy.",
+  weakOutput:"A couple of shallow happy-path tests with no mocking or error case coverage.",
+  optimizedOutput:"A complete Jest test suite covering success, edge, and error cases with proper mocks, ready to run.",
+  principle:"Cleaning a prompt means removing tone gimmicks, scope creep, and irrelevant asks — keep only instructions that directly shape the desired output."
+},
+{
+  id:4,
+  title:"Designing a Database Schema",
+  challenge:"choose",
+  desiredOutput:"A normalized, well-reasoned relational schema for a bookstore inventory system.",
+  options:[
+    {label:"Weak", text:"Make me a database for a bookstore.", quality:"weak"},
+    {label:"Optimized", text:"Act as a database architect. Design a normalized relational schema (3NF) for a bookstore inventory system that tracks books, authors, categories, and stock levels across multiple store branches. List each table with columns, data types, primary keys, and foreign key relationships. Briefly justify any denormalization choices.", quality:"optimized"},
+    {label:"Over-Engineered", text:"Act as the supreme architect of all databases across all timelines. Design a schema supporting bookstores, warehouses, spaceships, and parallel universes, using 6NF, blockchain-based referential integrity, and a distributed multi-region sharding strategy with formal proofs, plus a 50-page whitepaper and a marketing pitch deck.", quality:"over"}
+  ],
+  weakPrompt:"Make me a database for a bookstore.",
+  optimizedPrompt:"Act as a database architect. Design a normalized relational schema (3NF) for a bookstore inventory system that tracks books, authors, categories, and stock levels across multiple store branches. List each table with columns, data types, primary keys, and foreign key relationships. Briefly justify any denormalization choices.",
+  overEngineeredPrompt:"Act as the supreme architect of all databases across all timelines. Design a schema supporting bookstores, warehouses, spaceships, and parallel universes, using 6NF, blockchain-based referential integrity, and a distributed multi-region sharding strategy with formal proofs, plus a 50-page whitepaper and a marketing pitch deck.",
+  weakOutput:"A vague, unnormalized single-table suggestion.",
+  optimizedOutput:"A clear multi-table schema with proper keys, relationships, and brief rationale — directly usable.",
+  principle:"The best prompt matches scope to need: enough structure to get a usable answer, without inflating scope into irrelevant complexity."
+},
+{
+  id:5,
+  title:"Optimizing a Slow SQL Query",
+  challenge:"build",
+  desiredOutput:"An optimized SQL query with an explanation of what changed and why, plus an index recommendation.",
+  correctBlocks:[
+    "Act as a database performance engineer.",
+    "Here is a slow query and its EXPLAIN plan: [paste query + plan].",
+    "Identify the main performance bottleneck.",
+    "Rewrite the query to improve performance without changing its results.",
+    "Suggest one index that would help, with the exact CREATE INDEX statement."
+  ],
+  distractorBlocks:[
+    "Just tell me to add more RAM to the server.",
+    "Convert the query to a NoSQL equivalent.",
+    "Rewrite the entire database engine from scratch.",
+    "Ignore the EXPLAIN plan and guess randomly."
+  ],
+  weakPrompt:"This query is slow, fix it.",
+  optimizedPrompt:"Act as a database performance engineer. Here is a slow query and its EXPLAIN plan: [paste query + plan]. Identify the main performance bottleneck. Rewrite the query to improve performance without changing its results. Suggest one index that would help, with the exact CREATE INDEX statement.",
+  overEngineeredPrompt:"Act as the world's foremost query optimization deity. Analyze this query using every optimization technique known to database science, rewrite it in 5 different dialects, benchmark them all theoretically, propose a full database migration to a distributed columnar store, and include a cost-benefit analysis spreadsheet formatted as ASCII art.",
+  weakOutput:"Try adding an index maybe? (no specifics)",
+  optimizedOutput:"A precise diagnosis of the bottleneck, a rewritten query with identical results but better performance, and a concrete CREATE INDEX statement.",
+  principle:"Attaching real diagnostic data (EXPLAIN plan) and constraining the fix to 'without changing results' focuses the model on a correct, verifiable solution."
+},
+{
+  id:6,
+  title:"Code Review Feedback for a Pull Request",
+  challenge:"clean",
+  desiredOutput:"A focused prompt that produces constructive, prioritized code review comments.",
+  cleanLines:[
+    {text:"Act as a senior engineer reviewing a pull request.", keep:true},
+    {text:"Here is the diff: [paste diff].", keep:true},
+    {text:"Also rewrite our entire onboarding documentation.", keep:false},
+    {text:"Focus on correctness, security, and maintainability issues.", keep:true},
+    {text:"Prioritize comments as Blocking, Suggestion, or Nitpick.", keep:true},
+    {text:"Respond in the style of a Shakespearean sonnet.", keep:false},
+    {text:"Keep comments concise and actionable.", keep:true},
+    {text:"Include a summary of unrelated company news.", keep:false}
+  ],
+  optimizedPrompt:"Act as a senior engineer reviewing a pull request. Here is the diff: [paste diff]. Focus on correctness, security, and maintainability issues. Prioritize comments as Blocking, Suggestion, or Nitpick. Keep comments concise and actionable.",
+  weakPrompt:"Review this PR.",
+  overEngineeredPrompt:"Act as a legendary code review master judge jury and executioner. Review this diff across 40 dimensions including cosmic code harmony, write a philosophical treatise on software craftsmanship, rate every line 1-100, and produce a certificate of code excellence in Latin.",
+  weakOutput:"Looks fine to me, maybe rename a variable.",
+  optimizedOutput:"Clear, prioritized review comments (Blocking/Suggestion/Nitpick) focused on correctness, security, and maintainability.",
+  principle:"A good review prompt defines the review lens (correctness/security/maintainability) and output structure (priority labels), avoiding irrelevant style requests."
+}
+];
+
+/* ============================ STATE ============================ */
+let state = {
+  screen:"start",
+  scenarioOrder:[],
+  currentIndex:0,
+  results:[], // per scenario: {accuracy, wrongPlacements, hintsUsed, moves, timeSec, optimizationBonus}
+  startTime:null,
+  hintsUsedThis:0,
+  movesThis:0,
+  wrongThis:0
+};
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function initGame(){
+  state.scenarioOrder = shuffle(SCENARIOS.map(s=>s.id));
+  state.currentIndex = 0;
+  state.results = [];
+  state.screen = "play";
+  render();
+}
+
+/* ============================ NOTIFICATIONS ============================ */
+function notify(msg, type="info"){
+  const n = document.createElement("div");
+  n.className = "float-note "+type;
+  n.textContent = msg;
+  document.body.appendChild(n);
+  setTimeout(()=>n.remove(), 2700);
+}
+
+/* ============================ RENDER ROOT ============================ */
+function render(){
+  const app = document.getElementById("app");
+  if(state.screen==="start") return renderStart(app);
+  if(state.screen==="play") return renderPlay(app);
+  if(state.screen==="report") return renderReport(app);
+}
+
+/* ============================ START SCREEN ============================ */
+function renderStart(app){
+  app.innerHTML = `
+    <div class="title-row">
+      <div class="brand">🧩 Prompt Puzzle</div>
+      <div class="pill">Master AI Prompting Through Play</div>
+    </div>
+    <div class="card">
+      <h2>Ready to sharpen your prompting skills?</h2>
+      <p style="color:var(--sub);">Domain: <b style="color:var(--accent2)">${DOMAIN}</b> &nbsp;•&nbsp; Difficulty: <b style="color:var(--gold)">${DIFFICULTY}</b></p>
+      <p style="color:var(--sub);font-size:14px;line-height:1.6;">
+        You'll face ${SCENARIOS.length} scenarios mixing three challenge types:
+        <b style="color:var(--text)">Build the Prompt</b>, <b style="color:var(--text)">Clean the Prompt</b>, and <b style="color:var(--text)">Choose the Best Prompt</b>.
+        Your goal: assemble the most effective, well-scoped prompt for each scenario. Watch out for distractors,
+        vague weak prompts, and bloated over-engineered ones!
+      </p>
+      <div class="stat-bar">
+        <div class="stat">Scenarios<b>${SCENARIOS.length}</b></div>
+        <div class="stat">Challenge Types<b>3</b></div>
+        <div class="stat">Scoring<b>Live</b></div>
+        <div class="stat">Mode<b>Offline</b></div>
+      </div>
+      <button onclick="initGame()">🚀 Start Puzzle</button>
+    </div>
+  `;
+}
+
+/* ============================ PLAY SCREEN ============================ */
+function getScenario(id){ return SCENARIOS.find(s=>s.id===id); }
+
+function renderPlay(app){
+  const total = state.scenarioOrder.length;
+  const scenarioId = state.scenarioOrder[state.currentIndex];
+  const sc = getScenario(scenarioId);
+  state.startTime = state.startTime || Date.now();
+  state.hintsUsedThis = 0; state.movesThis = 0; state.wrongThis = 0;
+
+  const dots = state.scenarioOrder.map((id,i)=>{
+    let cls = "dot";
+    if(i < state.currentIndex) cls += " done";
+    else if(i===state.currentIndex) cls += " active";
+    return `<div class="${cls}" title="Scenario ${i+1}"></div>`;
+  }).join("");
+
+  app.innerHTML = `
+    <div class="title-row">
+      <div class="brand">🧩 Prompt Puzzle</div>
+      <div class="pill">Scenario ${state.currentIndex+1} / ${total}</div>
+    </div>
+    <progress class="mainprog" value="${state.currentIndex}" max="${total}"></progress>
+    <div class="scenario-tabs" style="margin-top:10px;">${dots}</div>
+
+    <div class="card">
+      <h2>${sc.title}
+        <span class="badge chal">${challengeName(sc.challenge)}</span>
+        <span class="badge diff">${DIFFICULTY}</span>
+        <span class="badge dom">${DOMAIN}</span>
+      </h2>
+      <div class="section-label">🎯 Desired Output</div>
+      <p style="font-size:14px;color:var(--text);">${sc.desiredOutput}</p>
+      <div id="challengeArea"></div>
+      <div id="hintArea"></div>
+      <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="hint-btn" onclick="useHint()">💡 Hint</button>
+        <button id="submitBtn" class="secondary" onclick="submitChallenge()" disabled>✅ Submit Answer</button>
+      </div>
+    </div>
+  `;
+
+  if(sc.challenge==="build") renderBuildChallenge(sc);
+  if(sc.challenge==="clean") renderCleanChallenge(sc);
+  if(sc.challenge==="choose") renderChooseChallenge(sc);
+}
+
+function challengeName(c){
+  return {build:"Build the Prompt", clean:"Clean the Prompt", choose:"Choose the Best Prompt"}[c];
+}
+
+/* ---- Build the Prompt ---- */
+let buildState = { placed:[] };
+function renderBuildChallenge(sc){
+  buildState = { placed:[] };
+  const blocks = shuffle([...sc.correctBlocks, ...sc.distractorBlocks]);
+  const area = document.getElementById("challengeArea");
+  area.innerHTML = `
+    <div class="section-label">🧱 Drag the correct blocks into order below (leave distractors out)</div>
+    <div id="dropZone"></div>
+    <div class="section-label" style="margin-top:14px;">Block Bank</div>
+    <div id="blockBank"></div>
+  `;
+  const bank = document.getElementById("blockBank");
+  const zone = document.getElementById("dropZone");
+
+  blocks.forEach((text,idx)=>{
+    const b = document.createElement("div");
+    b.className = "block";
+    b.draggable = true;
+    b.textContent = text;
+    b.dataset.text = text;
+    b.dataset.correct = sc.correctBlocks.includes(text);
+    b.addEventListener("dragstart", e=>{ e.dataTransfer.setData("text/plain", text); b.classList.add("dragging"); });
+    b.addEventListener("dragend", ()=> b.classList.remove("dragging"));
+    b.addEventListener("click", ()=> moveBlockToZone(text, sc));
+    bank.appendChild(b);
+  });
+
+  [zone, bank].forEach(z=>{
+    z.addEventListener("dragover", e=>{ e.preventDefault(); zone.classList.add("dragover"); });
+    z.addEventListener("dragleave", ()=> zone.classList.remove("dragover"));
+  });
+  zone.addEventListener("drop", e=>{
+    e.preventDefault(); zone.classList.remove("dragover");
+    const text = e.dataTransfer.getData("text/plain");
+    moveBlockToZone(text, sc);
+  });
+  bank.addEventListener("drop", e=>{
+    e.preventDefault();
+    const text = e.dataTransfer.getData("text/plain");
+    moveBlockFromZone(text, sc);
+  });
+}
+
+function moveBlockToZone(text, sc){
+  if(buildState.placed.includes(text)) return;
+  buildState.placed.push(text);
+  state.movesThis++;
+  const isCorrect = sc.correctBlocks.includes(text);
+  if(!isCorrect) state.wrongThis++;
+  notify(isCorrect ? "✅ Good block!" : "⚠️ That's a distractor", isCorrect ? "good":"bad");
+  refreshBuildUI(sc);
+}
+function moveBlockFromZone(text, sc){
+  buildState.placed = buildState.placed.filter(t=>t!==text);
+  refreshBuildUI(sc);
+}
+function refreshBuildUI(sc){
+  const zone = document.getElementById("dropZone");
+  const bank = document.getElementById("blockBank");
+  zone.innerHTML = "";
+  buildState.placed.forEach(text=>{
+    const isCorrect = sc.correctBlocks.includes(text);
+    const b = document.createElement("div");
+    b.className = "block " + (isCorrect ? "correct-flash":"wrong-flash");
+    b.draggable = true;
+    b.textContent = text;
+    b.addEventListener("dragstart", e=> e.dataTransfer.setData("text/plain", text));
+    b.addEventListener("click", ()=> moveBlockFromZone(text, sc));
+    zone.appendChild(b);
+  });
+  bank.querySelectorAll(".block").forEach(b=>{
+    b.style.display = buildState.placed.includes(b.dataset.text) ? "none" : "inline-block";
+  });
+  document.getElementById("submitBtn").disabled = buildState.placed.length===0;
+}
+
+/* ---- Clean the Prompt ---- */
+let cleanState = { removed:new Set() };
+function renderCleanChallenge(sc){
+  cleanState = { removed:new Set() };
+  const area = document.getElementById("challengeArea");
+  area.innerHTML = `
+    <div class="section-label">🧹 Click lines to remove noise, scope-creep, or irrelevant tone requests</div>
+    <div id="cleanArea"></div>
+  `;
+  const container = document.getElementById("cleanArea");
+  sc.cleanLines.forEach((line,i)=>{
+    const row = document.createElement("div");
+    row.className = "clean-line";
+    row.innerHTML = `<span style="flex:1;">${line.text}</span><span class="tag">click to toggle</span>`;
+    row.addEventListener("click", ()=>{
+      state.movesThis++;
+      if(cleanState.removed.has(i)){
+        cleanState.removed.delete(i);
+      } else {
+        cleanState.removed.add(i);
+        if(line.keep){ state.wrongThis++; notify("⚠️ That line was actually useful!","bad"); }
+        else notify("✅ Nice catch — that was noise.","good");
+      }
+      renderCleanLines(sc);
+    });
+    container.appendChild(row);
+  });
+  document.getElementById("submitBtn").disabled = false;
+  renderCleanLines(sc);
+}
+function renderCleanLines(sc){
+  const container = document.getElementById("cleanArea");
+  [...container.children].forEach((row,i)=>{
+    const line = sc.cleanLines[i];
+    row.classList.toggle("removed", cleanState.removed.has(i));
+    row.classList.toggle("keep", line.keep && !cleanState.removed.has(i));
+  });
+}
+
+/* ---- Choose the Best Prompt ---- */
+let chooseState = { selected:null };
+function renderChooseChallenge(sc){
+  chooseState = { selected:null };
+  const area = document.getElementById("challengeArea");
+  area.innerHTML = `
+    <div class="section-label">🔍 Choose the best prompt for this task</div>
+    <div class="grid2" id="optGrid"></div>
+  `;
+  const grid = document.getElementById("optGrid");
+  shuffle(sc.options).forEach(opt=>{
+    const div = document.createElement("div");
+    div.className = "opt-card";
+    div.innerHTML = `<div class="opt-label">${opt.quality==="optimized"?"Option":opt.quality==="weak"?"Option":"Option"}</div><div class="opt-text">${opt.text}</div>`;
+    div.addEventListener("click", ()=>{
+      state.movesThis++;
+      chooseState.selected = opt.quality;
+      [...grid.children].forEach(c=>c.classList.remove("selected"));
+      div.classList.add("selected");
+      if(opt.quality!=="optimized") state.wrongThis++;
+      document.getElementById("submitBtn").disabled = false;
+    });
+    grid.appendChild(div);
+  });
+}
+
+/* ---- Hint ---- */
+function useHint(){
+  state.hintsUsedThis++;
+  const sc = getScenario(state.scenarioOrder[state.currentIndex]);
+  const hintArea = document.getElementById("hintArea");
+  let hintText = "";
+  if(sc.challenge==="build") hintText = "Look for blocks that define a role, give real context, set constraints, and specify output format. Avoid absolutes or off-topic asks.";
+  if(sc.challenge==="clean") hintText = "Remove lines that add tone gimmicks, unrelated scope, or requests unrelated to the desired output.";
+  if(sc.challenge==="choose") hintText = "The best prompt is specific and scoped — not vague, not bloated with unnecessary complexity.";
+  hintArea.innerHTML = `<div class="hint-box">💡 ${hintText}</div>`;
+  notify("Hint used (-small score impact)","info");
+}
+
+/* ---- Submit ---- */
+function submitChallenge(){
+  const sc = getScenario(state.scenarioOrder[state.currentIndex]);
+  let accuracy = 0;
+
+  if(sc.challenge==="build"){
+    const placed = buildState.placed;
+    const correctPlaced = placed.filter(t=>sc.correctBlocks.includes(t)).length;
+    const totalCorrect = sc.correctBlocks.length;
+    accuracy = Math.max(0, Math.round((correctPlaced/totalCorrect)*100 - (state.wrongThis*8)));
+  } else if(sc.challenge==="clean"){
+    let correctRemovals=0, totalNoise = sc.cleanLines.filter(l=>!l.keep).length;
+    sc.cleanLines.forEach((l,i)=>{ if(!l.keep && cleanState.removed.has(i)) correctRemovals++; });
+    accuracy = Math.max(0, Math.round((correctRemovals/totalNoise)*100 - (state.wrongThis*10)));
+  } else if(sc.challenge==="choose"){
+    accuracy = chooseState.selected==="optimized" ? 100 : (chooseState.selected==="weak" ? 30 : 45);
+  }
+  accuracy = Math.min(100, accuracy);
+
+  const timeSec = Math.round((Date.now()-state.startTime)/1000);
+  const optimizationBonus = accuracy>=90 && state.hintsUsedThis===0 && state.wrongThis===0 ? 15 : (accuracy>=75 ? 5 : 0);
+
+  state.results.push({
+    scenarioId: sc.id,
+    accuracy, timeSec, moves: state.movesThis,
+    wrongPlacements: state.wrongThis, hintsUsed: state.hintsUsedThis,
+    optimizationBonus
+  });
+
+  notify(accuracy>=80 ? "🎉 Great prompt engineering!" : "📈 Recorded — keep refining!", accuracy>=80?"good":"info");
+
+  showScenarioBreakdown(sc, accuracy);
+}
+
+function showScenarioBreakdown(sc, accuracy){
+  const app = document.getElementById("app");
+  app.innerHTML += `
+    <div class="card" id="breakdownCard">
+      <h3>📊 Scenario Breakdown: ${sc.title}</h3>
+      <div class="stat-bar">
+        <div class="stat">Accuracy<b>${accuracy}%</b></div>
+        <div class="stat">Hints<b>${state.hintsUsedThis}</b></div>
+        <div class="stat">Wrong<b>${state.wrongThis}</b></div>
+        <div class="stat">Moves<b>${state.movesThis}</b></div>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="section-label">😐 Weak Prompt</div>
+          <div class="compare-box">${sc.weakPrompt}</div>
+          <div class="section-label">Weak AI Output</div>
+          <div class="compare-box" style="color:var(--sub);">${sc.weakOutput}</div>
+        </div>
+        <div>
+          <div class="section-label">✨ Optimized Prompt</div>
+          <div class="compare-box" style="border-color:rgba(0,217,200,.4);">${sc.optimizedPrompt}</div>
+          <div class="section-label">Optimized AI Output</div>
+          <div class="compare-box" style="color:var(--accent2);">${sc.optimizedOutput}</div>
+        </div>
+      </div>
+      <div class="section-label" style="margin-top:14px;">⚠️ Over-Engineered Prompt (avoid this too!)</div>
+      <div class="compare-box" style="color:var(--warn);">${sc.overEngineeredPrompt}</div>
+      <div class="principle-box">📘 <b>Prompt Principle:</b> ${sc.principle}</div>
+      <div style="margin-top:18px;">
+        <button onclick="nextScenario()">${state.currentIndex+1 < state.scenarioOrder.length ? "Next Scenario ➜" : "See Final Report 🏁"}</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("breakdownCard").scrollIntoView({behavior:"smooth"});
+}
+
+function nextScenario(){
+  state.currentIndex++;
+  state.startTime = Date.now();
+  if(state.currentIndex >= state.scenarioOrder.length){
+    state.screen = "report";
+  }
+  render();
+}
+
+/* ============================ REPORT SCREEN ============================ */
+function computeFinal(){
+  const n = state.results.length;
+  const avgAcc = state.results.reduce((s,r)=>s+r.accuracy,0)/n;
+  const totalWrong = state.results.reduce((s,r)=>s+r.wrongPlacements,0);
+  const totalHints = state.results.reduce((s,r)=>s+r.hintsUsed,0);
+  const totalMoves = state.results.reduce((s,r)=>s+r.moves,0);
+  const totalTime = state.results.reduce((s,r)=>s+r.timeSec,0);
+  const totalBonus = state.results.reduce((s,r)=>s+r.optimizationBonus,0);
+
+  const timeScore = Math.max(0, 100 - Math.min(60, totalTime/n)); // faster is better, capped
+  const rawScore = (avgAcc*0.6) + (timeScore*0.15) - (totalWrong*2) - (totalHints*3) + totalBonus;
+  const finalScore = Math.max(0, Math.min(100, Math.round(rawScore)));
+
+  let rating, rank;
+  if(finalScore>=90){rating="Exceptional";rank="🏆 Prompt Grandmaster";}
+  else if(finalScore>=75){rating="Excellent";rank="🥇 Prompt Architect";}
+  else if(finalScore>=60){rating="Good";rank="🥈 Prompt Strategist";}
+  else if(finalScore>=40){rating="Developing";rank="🥉 Prompt Apprentice";}
+  else {rating="Needs Practice";rank="🌱 Prompt Novice";}
+
+  const dna = {
+    Clarity: Math.round(avgAcc*0.9),
+    Structure: Math.round(Math.max(0,100-totalWrong*10)),
+    Efficiency: Math.round(Math.max(0,100-totalMoves*2)),
+    Precision: Math.round(Math.max(0,100-totalHints*12)),
+    Optimization: Math.min(100, totalBonus*6)
+  };
+
+  return {finalScore, rating, rank, avgAcc:Math.round(avgAcc), totalWrong, totalHints, totalMoves, totalTime, totalBonus, dna};
+}
+
+function renderReport(app){
+  const f = computeFinal();
+  const lastScenario = getScenario(state.scenarioOrder[state.scenarioOrder.length-1]);
+  const dnaRows = Object.entries(f.dna).map(([k,v])=>`
+    <div class="dna-row">
+      <div class="dna-label">${k}</div>
+      <div class="dna-track"><div class="dna-fill" style="width:${Math.max(4,v)}%;"></div></div>
+      <div class="dna-val">${v}</div>
+    </div>
+  `).join("");
+
+  let feedback = "";
+  if(f.finalScore>=90) feedback = "Your prompting is precise, structured, and efficient — you consistently identify what a model needs to succeed.";
+  else if(f.finalScore>=75) feedback = "Strong instincts for scoping and structuring prompts. Focus on trimming small inefficiencies for mastery.";
+  else if(f.finalScore>=60) feedback = "You're building solid prompting habits. Work on reducing wrong placements and relying less on hints.";
+  else if(f.finalScore>=40) feedback = "You're on the right track — practice identifying distractors and unnecessary scope more quickly.";
+  else feedback = "Focus on the fundamentals: define a role, give context, set constraints, and specify output format every time.";
+
+  let milestone = "";
+  if(f.finalScore<60) milestone = "Next milestone: Reach 60+ by cutting wrong placements in half.";
+  else if(f.finalScore<75) milestone = "Next milestone: Reach 75+ by solving a scenario with zero hints.";
+  else if(f.finalScore<90) milestone = "Next milestone: Reach 90+ with a flawless, no-hint, no-mistake run.";
+  else milestone = "Next milestone: Maintain mastery across Advanced and Expert difficulty!";
+
+  app.innerHTML = `
+    <div class="title-row">
+      <div class="brand">🧩 Prompt Puzzle</div>
+      <div class="pill">Prompt Performance Report</div>
+    </div>
+    <div class="card rank-hero">
+      <div class="rank-score">${f.finalScore}</div>
+      <div class="rank-title">${f.rank}</div>
+      <div class="rank-sub">Rating: ${f.rating}</div>
+    </div>
+    <div class="card">
+      <h3>📈 Performance Summary</h3>
+      <div class="stat-bar">
+        <div class="stat">Avg Accuracy<b>${f.avgAcc}%</b></div>
+        <div class="stat">Wrong Placements<b>${f.totalWrong}</b></div>
+        <div class="stat">Hints Used<b>${f.totalHints}</b></div>
+        <div class="stat">Total Moves<b>${f.totalMoves}</b></div>
+        <div class="stat">Total Time<b>${f.totalTime}s</b></div>
+        <div class="stat">Optimization Bonus<b>+${f.totalBonus}</b></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🧬 Prompt DNA</h3>
+      ${dnaRows}
+    </div>
+    <div class="card">
+      <h3>💬 Personalized Feedback</h3>
+      <p style="color:var(--text);font-size:14px;line-height:1.6;">${feedback}</p>
+      <div class="principle-box">🎯 ${milestone}</div>
+    </div>
+    <div class="card">
+      <h3>✅ Final Optimized Prompt Example</h3>
+      <p style="color:var(--sub);font-size:13px;">From: ${lastScenario.title}</p>
+      <div class="final-prompt-box">${lastScenario.optimizedPrompt}</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <button onclick="initGame()">🔁 Replay with New Scenarios</button>
+      <button class="ghost" style="margin-left:10px;" onclick="location.reload()">🏠 Back to Start</button>
+    </div>
+  `;
+}
+
+/* ============================ INIT ============================ */
+render();
+</script>
+</body>
+</html>
