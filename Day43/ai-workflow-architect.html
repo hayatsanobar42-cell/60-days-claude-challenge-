@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Workflow Architect — SaaS MVP: React + Node + PostgreSQL</title>
+<style>
+:root{
+  --bg:#0b0f14;
+  --bg-elev:#111820;
+  --bg-elev-2:#161f29;
+  --line:#243040;
+  --ink:#e7edf3;
+  --ink-dim:#93a3b5;
+  --ink-faint:#5c6b7c;
+  --amber:#e8a33d;
+  --amber-dim:#7a5a26;
+  --mint:#4fd1a5;
+  --violet:#8b8ff5;
+  --rose:#e8637a;
+  --mono: 'JetBrains Mono','SF Mono',Consolas,Menlo,monospace;
+  --disp: 'Fraunces','Iowan Old Style',Georgia,serif;
+  --sans: 'Inter','Segoe UI',system-ui,sans-serif;
+  --radius:10px;
+  --shadow: 0 12px 40px -12px rgba(0,0,0,.6);
+}
+html.light{
+  --bg:#f6f4ef;
+  --bg-elev:#ffffff;
+  --bg-elev-2:#eeece4;
+  --line:#dcd8cc;
+  --ink:#1a1f26;
+  --ink-dim:#5b6472;
+  --ink-faint:#8a91a0;
+  --shadow: 0 12px 30px -14px rgba(0,0,0,.2);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);transition:background .3s,color .3s;}
+::selection{background:var(--amber);color:#0b0f14;}
+a{color:inherit;}
+
+/* ===== Top Nav ===== */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 28px;background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:14px;letter-spacing:.5px;}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint);}
+.brand b{font-family:var(--disp);font-size:17px;font-weight:600;letter-spacing:0;}
+.nav-actions{display:flex;gap:8px;align-items:center;}
+.pill-btn{
+  border:1px solid var(--line);background:var(--bg-elev);color:var(--ink-dim);
+  padding:8px 14px;border-radius:999px;font-family:var(--mono);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:all .2s;
+}
+.pill-btn:hover{color:var(--ink);border-color:var(--amber-dim);}
+.pill-btn.active{color:var(--bg);background:var(--amber);border-color:var(--amber);}
+
+/* ===== Hero ===== */
+.hero{
+  padding:80px 28px 50px;max-width:1100px;margin:0 auto;position:relative;
+}
+.hero-eyebrow{font-family:var(--mono);font-size:12px;color:var(--mint);letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:22px;height:1px;background:var(--mint);}
+.hero h1{
+  font-family:var(--disp);font-weight:600;font-size:clamp(34px,5vw,58px);line-height:1.05;margin:0 0 20px;
+  letter-spacing:-.5px;
+}
+.hero h1 .accent{color:var(--amber);font-style:italic;}
+.hero p.lead{color:var(--ink-dim);font-size:18px;line-height:1.6;max-width:640px;margin:0 0 32px;}
+.stack-tags{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:40px;}
+.stack-tag{font-family:var(--mono);font-size:12px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;color:var(--ink-dim);background:var(--bg-elev);}
+
+/* terminal signature element */
+.terminal{
+  background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow);max-width:720px;
+}
+.terminal-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg-elev-2);}
+.terminal-head span{width:10px;height:10px;border-radius:50%;background:var(--line);}
+.terminal-head span:nth-child(1){background:#e8637a;}
+.terminal-head span:nth-child(2){background:#e8a33d;}
+.terminal-head span:nth-child(3){background:#4fd1a5;}
+.terminal-head b{margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--ink-faint);font-weight:400;}
+.terminal-body{padding:18px 20px;font-family:var(--mono);font-size:13px;line-height:1.9;color:var(--ink-dim);}
+.terminal-body .prompt{color:var(--mint);}
+.terminal-body .cmd{color:var(--ink);}
+.terminal-body .out{color:var(--ink-faint);}
+.typed-cursor{display:inline-block;width:7px;height:14px;background:var(--amber);animation:blink 1s step-start infinite;vertical-align:middle;}
+@keyframes blink{50%{opacity:0;}}
+
+/* ===== Progress rail ===== */
+.progress-wrap{position:sticky;top:57px;z-index:40;background:var(--bg);border-bottom:1px solid var(--line);padding:14px 28px;}
+.progress-inner{max-width:1100px;margin:0 auto;}
+.progress-bar-track{height:4px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--amber));width:0%;transition:width .4s;}
+.stage-nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;}
+.stage-chip{
+  flex:0 0 auto;font-family:var(--mono);font-size:11.5px;padding:7px 12px;border-radius:6px;
+  border:1px solid var(--line);color:var(--ink-faint);cursor:pointer;white-space:nowrap;
+  display:flex;align-items:center;gap:6px;transition:all .2s;background:var(--bg-elev);
+}
+.stage-chip:hover{color:var(--ink);}
+.stage-chip.done{color:var(--mint);border-color:color-mix(in srgb, var(--mint) 40%, var(--line));}
+.stage-chip.done::before{content:'✓';}
+.stage-chip input{display:none;}
+
+/* ===== Layout ===== */
+.wrap{max-width:1100px;margin:0 auto;padding:20px 28px 100px;}
+.stage{
+  border:1px solid var(--line);border-radius:14px;background:var(--bg-elev);
+  margin-bottom:28px;overflow:hidden;
+}
+.stage-header{
+  padding:26px 28px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
+  cursor:pointer;user-select:none;
+}
+.stage-num{font-family:var(--mono);font-size:12px;color:var(--amber);margin-bottom:8px;letter-spacing:1px;}
+.stage-header h2{font-family:var(--disp);font-size:26px;margin:0 0 8px;font-weight:600;}
+.stage-header p{color:var(--ink-dim);margin:0;max-width:600px;font-size:14.5px;line-height:1.55;}
+.stage-meta{display:flex;gap:14px;flex-shrink:0;align-items:center;}
+.time-badge{font-family:var(--mono);font-size:11px;color:var(--ink-faint);border:1px solid var(--line);padding:5px 10px;border-radius:6px;white-space:nowrap;}
+.chevron{width:20px;height:20px;transition:transform .3s;color:var(--ink-faint);flex-shrink:0;}
+.stage.open .chevron{transform:rotate(180deg);}
+.stage-body{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.stage.open .stage-body{max-height:6000px;}
+.stage-content{padding:0 28px 30px;border-top:1px solid var(--line);}
+
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin:22px 0 20px;border-bottom:1px solid var(--line);padding-bottom:0;}
+.tab-btn{
+  font-family:var(--mono);font-size:12px;padding:9px 14px;background:none;border:none;color:var(--ink-faint);
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab-btn.active{color:var(--amber);border-bottom-color:var(--amber);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fade .3s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:760px){.grid2{grid-template-columns:1fr;}}
+
+.block-label{font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
+ul.clean{margin:0;padding:0;list-style:none;}
+ul.clean li{padding:8px 0 8px 20px;position:relative;font-size:14px;line-height:1.6;color:var(--ink);border-bottom:1px dashed var(--line);}
+ul.clean li:last-child{border-bottom:none;}
+ul.clean li::before{content:'→';position:absolute;left:0;color:var(--mint);font-family:var(--mono);}
+ul.clean.mistakes li::before{content:'✕';color:var(--rose);}
+ul.clean.practice li::before{content:'✓';color:var(--mint);}
+
+.tool-card{
+  border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;background:var(--bg-elev-2);
+}
+.tool-card.primary{border-color:color-mix(in srgb, var(--amber) 45%, var(--line));}
+.tool-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.tool-name{font-family:var(--sans);font-weight:700;font-size:15px;}
+.tool-tag{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:20px;background:var(--amber-dim);color:var(--amber);}
+.tool-why{color:var(--ink-dim);font-size:13.5px;line-height:1.55;margin:0 0 8px;}
+.tool-alt{font-size:12px;color:var(--ink-faint);font-family:var(--mono);}
+.tool-alt b{color:var(--ink-dim);font-family:var(--sans);}
+
+.prompt-box{
+  background:#05070a;border:1px solid var(--line);border-radius:8px;padding:14px 16px;font-family:var(--mono);
+  font-size:12.5px;color:#c9e8d6;margin-bottom:10px;position:relative;line-height:1.6;white-space:pre-wrap;
+}
+html.light .prompt-box{background:#12181f;color:#bfe8d1;}
+.copy-btn{
+  position:absolute;top:8px;right:8px;background:var(--bg-elev);border:1px solid var(--line);color:var(--ink-faint);
+  font-family:var(--mono);font-size:10px;padding:4px 8px;border-radius:5px;cursor:pointer;
+}
+.copy-btn:hover{color:var(--mint);}
+
+.output-box{border-left:3px solid var(--mint);padding:10px 16px;background:var(--bg-elev-2);border-radius:0 8px 8px 0;font-size:13.5px;color:var(--ink-dim);margin-bottom:8px;}
+
+/* task checklist */
+.task-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
+.task-row:last-child{border-bottom:none;}
+.task-row input[type=checkbox]{margin-top:3px;accent-color:var(--mint);width:15px;height:15px;cursor:pointer;}
+.task-row label{font-size:14px;line-height:1.5;cursor:pointer;}
+.task-row.checked label{color:var(--ink-faint);text-decoration:line-through;}
+
+/* notes */
+textarea.note{
+  width:100%;min-height:80px;background:var(--bg-elev-2);border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);font-family:var(--sans);font-size:13.5px;padding:12px;resize:vertical;
+}
+textarea.note:focus{outline:none;border-color:var(--amber-dim);}
+
+.bookmark-btn{
+  background:none;border:1px solid var(--line);color:var(--ink-faint);border-radius:6px;padding:6px 10px;
+  font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px;
+}
+.bookmark-btn.on{color:var(--amber);border-color:var(--amber-dim);}
+
+/* diagram */
+.pipeline{display:flex;align-items:center;gap:0;overflow-x:auto;padding:20px 4px;}
+.pnode{
+  flex:0 0 auto;background:var(--bg-elev-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:150px;
+  text-align:center;cursor:pointer;transition:all .2s;
+}
+.pnode:hover{border-color:var(--amber);transform:translateY(-2px);}
+.pnode .n{font-family:var(--mono);font-size:10px;color:var(--amber);}
+.pnode .t{font-weight:700;font-size:13.5px;margin:4px 0 2px;}
+.pnode .d{font-size:11px;color:var(--ink-faint);}
+.parrow{flex:0 0 auto;width:28px;height:2px;background:var(--line);position:relative;margin:0 2px;}
+.parrow::after{content:'';position:absolute;right:0;top:-3px;border:4px solid transparent;border-left-color:var(--line);}
+
+/* decision tree */
+.dtree{font-family:var(--mono);font-size:13px;}
+.dnode{margin-left:0;padding:10px 14px;border-left:2px solid var(--line);margin-bottom:2px;}
+.dnode.q{color:var(--amber);font-weight:700;}
+.dnode.a{margin-left:22px;color:var(--ink-dim);border-left-color:var(--mint);cursor:pointer;}
+.dnode.a:hover{color:var(--ink);}
+.dnode.result{margin-left:44px;color:var(--mint);display:none;padding:8px 14px;background:var(--bg-elev-2);border-radius:6px;border-left:none;}
+.dnode.result.show{display:block;}
+
+/* comparison table */
+table.cmp{width:100%;border-collapse:collapse;font-size:13px;}
+table.cmp th{text-align:left;font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--line);}
+table.cmp td{padding:12px;border-bottom:1px solid var(--line);color:var(--ink-dim);vertical-align:top;}
+table.cmp tr:last-child td{border-bottom:none;}
+table.cmp td b{color:var(--ink);}
+.score{color:var(--mint);font-family:var(--mono);}
+
+/* footer sections */
+.footer-section{border-top:1px solid var(--line);padding-top:40px;margin-top:20px;}
+.footer-section h3{font-family:var(--disp);font-size:24px;margin:0 0 18px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{font-family:var(--mono);font-size:12px;padding:7px 13px;border:1px solid var(--line);border-radius:20px;color:var(--ink-dim);background:var(--bg-elev-2);}
+.resource-card{border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--bg-elev-2);}
+.resource-card a{font-weight:700;font-size:14px;text-decoration:none;color:var(--ink);}
+.resource-card a:hover{color:var(--amber);}
+.resource-card p{color:var(--ink-faint);font-size:12.5px;margin:6px 0 0;}
+
+.print-btn{position:fixed;bottom:26px;right:26px;background:var(--amber);color:#0b0f14;border:none;padding:13px 20px;
+  border-radius:30px;font-family:var(--mono);font-weight:700;font-size:12.5px;cursor:pointer;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:8px;z-index:60;}
+.print-btn:hover{filter:brightness(1.08);}
+
+@media print{
+  .topbar,.progress-wrap,.print-btn,.tabs{display:none !important;}
+  .stage-body{max-height:none !important;}
+  .stage{break-inside:avoid;}
+  body{background:#fff;color:#000;}
+}
+
+@media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="dot"></span><b>AI Workflow Architect</b></div>
+  <div class="nav-actions">
+    <button class="pill-btn" id="resetBtn" title="Clear saved progress">↺ reset</button>
+    <button class="pill-btn" id="themeBtn">☾ dark</button>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">workflow / software-development / full-stack / saas-mvp</div>
+  <h1>Ship a <span class="accent">SaaS MVP</span><br>with React, Node &amp; Postgres.</h1>
+  <p class="lead">A complete, stage-by-stage build pipeline — from idea validation to launch — with the exact AI tools, prompts, and checkpoints to use at each step. Not advice. A path.</p>
+  <div class="stack-tags">
+    <span class="stack-tag">React</span><span class="stack-tag">Node.js / Express</span><span class="stack-tag">PostgreSQL</span>
+    <span class="stack-tag">REST API</span><span class="stack-tag">JWT Auth</span><span class="stack-tag">Stripe</span>
+  </div>
+  <div class="terminal">
+    <div class="terminal-head"><span></span><span></span><span></span><b>workflow.sh</b></div>
+    <div class="terminal-body" id="termBody">
+      <div><span class="prompt">$</span> <span class="cmd">workflow init --stack=react-node-postgres --target=mvp</span></div>
+      <div class="out">→ 7 stages mapped · 34 tasks · ~6 weeks solo</div>
+      <div><span class="prompt">$</span> <span class="cmd">workflow status</span></div>
+      <div class="out" id="statusLine">→ 0/34 tasks complete<span class="typed-cursor"></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progFill"></div></div>
+    <div class="stage-nav" id="stageNav"></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- diagram overview -->
+  <div class="block-label" style="margin-top:6px;">End-to-end pipeline</div>
+  <div class="pipeline" id="pipelineDiagram"></div>
+
+  <div id="stagesContainer"></div>
+
+  <!-- FOOTER SECTIONS -->
+  <div class="footer-section">
+    <h3>Workflow summary</h3>
+    <p style="color:var(--ink-dim);line-height:1.7;font-size:14.5px;max-width:760px;">
+    This pipeline takes a React + Node/Express + PostgreSQL SaaS idea from validation through launch in seven stages:
+    discovery, architecture, backend, frontend, integration &amp; testing, deployment, and post-launch growth.
+    Each stage is designed to run in parallel with AI pair-programming — Claude Code or Cursor for implementation,
+    a planning LLM for specs, and targeted point-tools (Stripe, Supabase, Vercel, Sentry) for the plumbing you shouldn't
+    hand-roll. Solo builders following this path typically reach a paying-customer-ready MVP in 5–8 weeks.
+    </p>
+  </div>
+
+  <div class="footer-section">
+    <h3>Recommended AI stack</h3>
+    <table class="cmp">
+      <tr><th>Layer</th><th>Tool</th><th>Role</th><th>Fit</th></tr>
+      <tr><td><b>Planning</b></td><td>Claude (Sonnet/Opus)</td><td>Specs, architecture, PRDs</td><td class="score">★★★★★</td></tr>
+      <tr><td><b>Coding</b></td><td>Claude Code</td><td>Full-repo implementation, refactors</td><td class="score">★★★★★</td></tr>
+      <tr><td><b>Coding (alt)</b></td><td>Cursor</td><td>In-IDE autocomplete + chat</td><td class="score">★★★★☆</td></tr>
+      <tr><td><b>UI generation</b></td><td>v0 by Vercel</td><td>React component scaffolding</td><td class="score">★★★★☆</td></tr>
+      <tr><td><b>Design</b></td><td>Claude Design / Figma</td><td>Mockups &amp; design systems</td><td class="score">★★★★☆</td></tr>
+      <tr><td><b>DB/Backend</b></td><td>Supabase or Neon</td><td>Managed Postgres, instant APIs</td><td class="score">★★★★☆</td></tr>
+      <tr><td><b>QA</b></td><td>Claude Code + Playwright</td><td>Test generation &amp; execution</td><td class="score">★★★★☆</td></tr>
+      <tr><td><b>Deploy</b></td><td>Vercel + Railway/Render</td><td>Frontend + backend hosting</td><td class="score">★★★★★</td></tr>
+    </table>
+  </div>
+
+  <div class="grid2 footer-section" style="border-top:1px solid var(--line);">
+    <div>
+      <h3>Learning resources</h3>
+      <div style="display:grid;gap:10px;">
+        <div class="resource-card"><a href="https://docs.claude.com" target="_blank">docs.claude.com ↗</a><p>Official docs for Claude Code, API, and prompting patterns.</p></div>
+        <div class="resource-card"><a href="https://roadmap.sh/full-stack" target="_blank">roadmap.sh/full-stack ↗</a><p>Visual full-stack learning roadmap.</p></div>
+        <div class="resource-card"><a href="https://www.postgresql.org/docs/" target="_blank">postgresql.org/docs ↗</a><p>Official Postgres reference for schema &amp; query design.</p></div>
+        <div class="resource-card"><a href="https://expressjs.com/" target="_blank">expressjs.com ↗</a><p>Express routing, middleware, and error handling guide.</p></div>
+      </div>
+    </div>
+    <div>
+      <h3>Communities</h3>
+      <div style="display:grid;gap:10px;">
+        <div class="resource-card"><a href="https://www.reddit.com/r/SaaS/" target="_blank">r/SaaS ↗</a><p>Indie SaaS builders sharing MVP progress and feedback.</p></div>
+        <div class="resource-card"><a href="https://www.indiehackers.com/" target="_blank">Indie Hackers ↗</a><p>Founder stories, revenue transparency, launch playbooks.</p></div>
+        <div class="resource-card"><a href="https://news.ycombinator.com/" target="_blank">Hacker News ↗</a><p>Launch on Show HN, technical discussion.</p></div>
+        <div class="resource-card"><a href="https://www.producthunt.com/" target="_blank">Product Hunt ↗</a><p>Launch day traffic and early adopter feedback.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-section">
+    <h3>Search keywords</h3>
+    <div class="chip-row">
+      <span class="chip">react node express postgres boilerplate</span>
+      <span class="chip">saas mvp architecture diagram</span>
+      <span class="chip">claude code full-stack tutorial</span>
+      <span class="chip">jwt auth express postgres</span>
+      <span class="chip">stripe subscription integration node</span>
+      <span class="chip">react dashboard component library</span>
+      <span class="chip">postgres schema design saas</span>
+      <span class="chip">deploy node api railway render</span>
+    </div>
+  </div>
+
+  <div class="footer-section">
+    <h3>Additional AI prompts</h3>
+    <div class="prompt-box">Review this Express route for security issues: missing input validation, SQL injection risk, and improper error handling. Suggest fixes with code.<button class="copy-btn" onclick="copyPrompt(this)">copy</button></div>
+    <div class="prompt-box">Given this Postgres schema [paste schema], suggest indexes for the 3 slowest query patterns in a multi-tenant SaaS app.<button class="copy-btn" onclick="copyPrompt(this)">copy</button></div>
+    <div class="prompt-box">Generate a React custom hook that wraps this API call with loading, error, and retry states, following our existing hook conventions.<button class="copy-btn" onclick="copyPrompt(this)">copy</button></div>
+  </div>
+
+  <div class="footer-section">
+    <h3>Future automation opportunities</h3>
+    <ul class="clean">
+      <li>Auto-generate changelogs from merged PRs using an AI summarizer webhook.</li>
+      <li>AI-triaged support inbox that drafts first-response replies from your docs.</li>
+      <li>Nightly AI code-review bot that comments on open PRs before human review.</li>
+      <li>Usage-pattern analysis that flags churn-risk accounts for proactive outreach.</li>
+      <li>Auto-generated release notes and social posts from your git diff on each deploy.</li>
+    </ul>
+  </div>
+
+</div>
+
+<button class="print-btn" onclick="window.print()">⤓ Printable guide</button>
+
+<script>
+/* ===================== DATA ===================== */
+const STAGES = [
+{
+  id:'discovery', num:'01', title:'Planning & Discovery', time:'3–5 days',
+  desc:'Validate the idea, define the user, and lock a scope you can actually ship.',
+  objectives:['Define target user & core pain point','Cut scope to one killer feature + auth + billing','Write a one-page PRD','Pick the tech stack constraints (already set: React/Node/Postgres)'],
+  tasks:['Write a 1-paragraph problem statement','Interview or survey 5 target users','List every feature you want, then cut to 3 max for MVP','Draft a one-page PRD (problem, users, scope, success metric)','Sketch the core user flow (signup → core action → value)'],
+  tools:[
+    {name:'Claude', tag:'Primary', why:'Best for structured reasoning through PRDs, user personas, and scope cuts — you can argue with it and it pushes back on scope creep.', alt:'ChatGPT, Notion AI'},
+    {name:'Perplexity', tag:'Research', why:'Fast competitive landscape and market-sizing research with citations.', alt:'Google + manual research'}
+  ],
+  prompts:['I want to build [idea] for [audience]. Help me cut this to a 2-week MVP scope: what is the ONE feature that proves the core value, and what can I explicitly defer to v2?','Write a one-page PRD for [idea]: problem statement, target user, 3 core features, out-of-scope list, and one success metric.'],
+  practices:['Write the success metric before writing any code','Scope to something you can build in under 2 weeks','Talk to 5 real users before finalizing scope'],
+  mistakes:['Building for "everyone" instead of one specific user','Adding auth providers, themes, or settings before core value exists','Skipping the PRD and going straight to code'],
+  outputs:['One-page PRD','Core user flow sketch','Prioritized feature list (in/out of scope)'],
+  efficiency:'Time-box discovery to 3 days max — a perfect PRD you never ship is worth zero.'
+},
+{
+  id:'architecture', num:'02', title:'Design & Architecture', time:'2–4 days',
+  desc:'Design the database schema, API contract, and system architecture before writing implementation code.',
+  objectives:['Design normalized Postgres schema','Define REST API contract','Choose auth strategy (JWT + refresh tokens)','Plan folder structure for React + Express monorepo'],
+  tasks:['Design ER diagram for core entities (users, and 2–3 domain tables)','Write API route list with methods, params, and responses','Decide auth flow: signup, login, refresh, logout','Set up monorepo structure (client/, server/, shared/)','Choose hosting targets (Vercel for client, Railway/Render for API, Neon/Supabase for DB)'],
+  tools:[
+    {name:'Claude', tag:'Primary', why:'Excellent at reasoning through schema normalization, foreign keys, and API contract consistency in one conversation.', alt:'dbdiagram.io, ChatGPT'},
+    {name:'Claude Code', tag:'Scaffolding', why:'Can scaffold the full folder structure and boilerplate config files directly in your repo from a description.', alt:'Cursor, manual setup'},
+    {name:'Excalidraw', tag:'Diagramming', why:'Fast hand-drawn-style architecture diagrams for your own reference and any stakeholder decks.', alt:'draw.io, Mermaid'}
+  ],
+  prompts:['Design a normalized Postgres schema for a SaaS app with: users, [entity1], [entity2]. Include foreign keys, indexes, and a migrations-ready SQL file.','Given this schema [paste], generate a REST API route table: method, path, auth required, request body, response shape.','Scaffold a monorepo with /client (React + Vite), /server (Express), and /shared (types), including package.json, tsconfig, and .env.example.'],
+  practices:['Normalize to 3NF, denormalize later only if profiling demands it','Version your API from day one (/api/v1/...)','Store secrets in .env, never in the repo'],
+  mistakes:['Designing the schema around the UI instead of the domain','Skipping indexes on foreign keys used in JOINs','Hardcoding config values instead of using environment variables'],
+  outputs:['ER diagram','SQL migration files','API route contract document','Repo folder structure'],
+  efficiency:'Generate the schema and API contract in the same AI session so they stay consistent with each other.'
+},
+{
+  id:'backend', num:'03', title:'Backend Development', time:'5–8 days',
+  desc:'Build the Express API, Postgres integration, auth, and business logic.',
+  objectives:['Implement Express server with middleware stack','Build auth (signup/login/JWT/refresh)','Implement CRUD routes per the API contract','Connect Postgres via a query layer (pg or Prisma)'],
+  tasks:['Set up Express app with helmet, cors, morgan, error middleware','Implement Postgres connection pool and migration runner','Build auth routes: register, login, refresh, logout, password reset','Implement core domain CRUD routes with validation (zod/joi)','Add rate limiting on auth routes','Write seed data script for local dev'],
+  tools:[
+    {name:'Claude Code', tag:'Primary', why:'Can implement entire route files, middleware, and DB queries across multiple files in one pass, respecting your existing patterns.', alt:'Cursor, GitHub Copilot'},
+    {name:'Claude', tag:'Debugging', why:'Paste stack traces or slow-query plans for fast root-cause diagnosis without leaving chat.', alt:'Stack Overflow, ChatGPT'},
+    {name:'Prisma', tag:'ORM (optional)', why:'Type-safe query builder and migrations if you prefer not to hand-write SQL for every route.', alt:'raw `pg` + SQL, Drizzle ORM'}
+  ],
+  prompts:['Implement Express JWT auth: register, login, refresh-token rotation, and logout, using bcrypt and the users table from this schema [paste]. Include input validation with zod.','Write an Express CRUD router for [entity] with pagination, ownership checks (user can only access their own rows), and proper error responses.','Here is a slow query and its EXPLAIN ANALYZE output [paste]. Suggest an index or query rewrite.'],
+  practices:['Validate every input at the route boundary, not just in the DB','Hash passwords with bcrypt (cost factor ≥ 10)','Return consistent error shapes ({ error: { code, message } })','Use parameterized queries — never string-concatenate SQL'],
+  mistakes:['Trusting client-side validation as the only validation','Storing JWTs with no expiry or refresh strategy','N+1 queries from looping DB calls instead of JOINs'],
+  outputs:['Working Express API with auth + core CRUD routes','Postgres migrations applied','Postman/Thunder Client collection for manual testing'],
+  efficiency:'Ask Claude Code to write both the route AND its test in the same request — you get coverage for free.'
+},
+{
+  id:'frontend', num:'04', title:'Frontend Development', time:'6–9 days',
+  desc:'Build the React UI: auth flows, core feature screens, and API integration.',
+  objectives:['Set up React app with routing and state management','Build auth screens (login/signup/forgot password)','Build the core feature UI per the user flow from Stage 1','Wire up API calls with loading/error states'],
+  tasks:['Scaffold React app (Vite) with React Router and a UI kit','Build auth pages and protected route wrapper','Build core feature screens (list, detail, create/edit)','Create reusable API client with interceptors for auth headers','Add loading skeletons and error boundaries','Implement responsive layout for mobile'],
+  tools:[
+    {name:'v0 by Vercel', tag:'Primary — UI', why:'Generates production-quality React + Tailwind components from a prompt or screenshot, faster than building from scratch.', alt:'Claude Code, Cursor'},
+    {name:'Claude Code', tag:'Primary — Logic', why:'Wires generated components to your API, handles state management, and keeps auth/data logic consistent across files.', alt:'Cursor, GitHub Copilot'},
+    {name:'Claude Design', tag:'Design system', why:'Produces a cohesive design system (spacing, type scale, colors) before you generate components, so v0 output stays consistent.', alt:'Figma + manual tokens'}
+  ],
+  prompts:['Generate a React + Tailwind dashboard layout with sidebar nav, top bar with user menu, and a main content area, matching a dark, minimal SaaS aesthetic.','Build a React custom hook `useApi(endpoint)` returning { data, loading, error, refetch }, using fetch and our auth token from context.','Create a protected route wrapper in React Router v6 that redirects unauthenticated users to /login and preserves the intended destination.'],
+  practices:['Centralize API calls in one client module, not scattered fetches','Keep components small and colocate them with their styles/tests','Design mobile-first, then expand to desktop breakpoints'],
+  mistakes:['Prop-drilling auth state instead of using context','No loading/error states, so the UI silently breaks on slow networks','Inconsistent spacing/typography from mixing hand-written and generated components without a shared token system'],
+  outputs:['Working React app with routing','Auth flow UI connected to backend','Core feature screens with live data'],
+  efficiency:'Generate the design system tokens once, then reference them in every v0 prompt to keep components visually consistent.'
+},
+{
+  id:'testing', num:'05', title:'Integration & Testing', time:'3–5 days',
+  desc:'Connect frontend to backend end-to-end, write tests, and harden edge cases.',
+  objectives:['Full end-to-end integration between React and Express','Automated test coverage for critical paths','Manual QA pass across devices and browsers'],
+  tasks:['Run full signup → core action → logout flow end-to-end locally','Write unit tests for backend business logic','Write Playwright/Cypress e2e tests for auth and core flow','Test error states: expired token, network failure, invalid input','Cross-browser and mobile responsive check'],
+  tools:[
+    {name:'Claude Code', tag:'Primary', why:'Can generate unit and e2e tests directly from your route/component code, matching existing test conventions in the repo.', alt:'Cursor, GitHub Copilot'},
+    {name:'Playwright', tag:'E2E', why:'Reliable, fast e2e testing with good debugging (trace viewer) for catching integration bugs.', alt:'Cypress'},
+    {name:'Sentry', tag:'Error tracking', why:'Catches runtime errors in production you won\'t see in local testing, with stack traces mapped to source.', alt:'LogRocket, Bugsnag'}
+  ],
+  prompts:['Write Playwright e2e tests covering: signup, login, core feature creation, and logout, against this app structure [paste routes].','Generate Jest unit tests for this Express controller [paste], covering the happy path and 3 edge cases (invalid input, unauthorized, not found).','Review this component for accessibility issues: missing labels, poor contrast, missing keyboard navigation.'],
+  practices:['Test the unhappy paths as thoroughly as the happy path','Run tests in CI on every push, not just locally','Fix flaky tests immediately — they erode trust in the whole suite'],
+  mistakes:['Only testing the happy path','Treating manual QA as optional because "the AI wrote it"','Ignoring console warnings and accessibility errors'],
+  outputs:['Passing unit + e2e test suite','QA checklist completed','Known-issues list for post-launch'],
+  efficiency:'Have Claude Code write tests immediately after each feature, not batched at the end — bugs surface while context is fresh.'
+},
+{
+  id:'deployment', num:'06', title:'Deployment & Launch', time:'2–3 days',
+  desc:'Ship to production: hosting, CI/CD, monitoring, and billing.',
+  objectives:['Deploy frontend, backend, and database to production','Set up CI/CD for automatic deploys','Wire up billing (Stripe) and production monitoring'],
+  tasks:['Deploy React app to Vercel','Deploy Express API to Railway or Render','Provision production Postgres (Neon/Supabase/Railway)','Set up GitHub Actions for test-then-deploy on merge','Integrate Stripe Checkout + webhooks for subscriptions','Set up Sentry + uptime monitoring','Point custom domain and configure SSL'],
+  tools:[
+    {name:'Vercel', tag:'Frontend host', why:'Zero-config React deploys with previews on every PR — fastest path to a live frontend.', alt:'Netlify, Cloudflare Pages'},
+    {name:'Railway / Render', tag:'Backend host', why:'Simple Node deploys with managed Postgres add-ons, good free/hobby tiers for MVPs.', alt:'Fly.io, Heroku'},
+    {name:'Claude Code', tag:'CI/CD', why:'Writes your GitHub Actions workflow files and Stripe webhook handlers correctly on the first pass, including signature verification.', alt:'Manual YAML + Stripe docs'}
+  ],
+  prompts:['Write a GitHub Actions workflow that runs tests on PR and deploys to Railway on merge to main, using secrets for env vars.','Implement a Stripe Checkout + webhook flow for a monthly subscription in Express, including signature verification and handling checkout.session.completed.','Write a production-ready .env.example and a startup health-check route for this Express app.'],
+  practices:['Use separate .env files for local/staging/production, never commit secrets','Verify Stripe webhook signatures — never trust unverified webhook payloads','Set up uptime alerts before you announce the launch, not after'],
+  mistakes:['Deploying without environment parity, causing "works on my machine" bugs','Skipping webhook signature verification (security risk)','No monitoring, so the first outage is reported by an angry user'],
+  outputs:['Live production app on a custom domain','Working billing flow','CI/CD pipeline','Monitoring + alerting configured'],
+  efficiency:'Deploy early and often (even in Stage 3) so launch day is just "flip the switch," not the first deploy ever.'
+},
+{
+  id:'growth', num:'07', title:'Post-Launch & Growth', time:'ongoing',
+  desc:'Collect feedback, fix what breaks, and build the next iteration with data instead of guesses.',
+  objectives:['Instrument analytics to see real usage','Build a fast feedback loop with early users','Prioritize v2 based on evidence, not assumption'],
+  tasks:['Add product analytics (PostHog/Plausible) on key actions','Set up an in-app feedback widget or simple email loop','Weekly triage of bug reports and feature requests','Write a public changelog for each release','Review churn/activation metrics and identify one thing to fix'],
+  tools:[
+    {name:'PostHog', tag:'Analytics', why:'Open-source, self-hostable product analytics with funnels and session replay — fits a lean SaaS budget.', alt:'Plausible, Mixpanel'},
+    {name:'Claude', tag:'Insight synthesis', why:'Summarize user feedback threads and support tickets into themed, prioritized issues fast.', alt:'ChatGPT, manual triage'},
+    {name:'Claude Code', tag:'Iteration', why:'Ships small, well-scoped fixes and features quickly since it already knows your codebase conventions.', alt:'Cursor'}
+  ],
+  prompts:['Here are 20 pieces of user feedback [paste]. Group them into themes, rank by frequency and severity, and suggest the top 3 to act on this week.','Given this analytics funnel [paste: signup → activation → retained], hypothesize 3 reasons for the drop-off between activation and retention.','Write a changelog entry in a friendly, plain-English tone for this PR diff [paste].'],
+  practices:['Ship small, frequent releases instead of big rare ones','Talk to churned users directly — the "why" rarely shows up in analytics alone','Keep a public changelog; it builds trust and shows momentum'],
+  mistakes:['Building features nobody asked for based on internal opinion','Ignoring qualitative feedback in favor of only vanity metrics','Letting bug reports pile up unaddressed, eroding early-user trust'],
+  outputs:['Analytics dashboard','Prioritized feedback backlog','Public changelog','v2 roadmap'],
+  efficiency:'Set a weekly 30-minute "triage" ritual — most MVPs die from unfocused, get lost in the backlog, not from lack of features.'
+}
+];
+
+/* ===================== STATE ===================== */
+const LS_KEY = 'awa_state_v1';
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {tasks:{}, notes:{}, bookmarks:{}, theme:'dark'}; }
+  catch(e){ return {tasks:{}, notes:{}, bookmarks:{}, theme:'dark'}; }
+}
+let state = loadState();
+function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+/* ===================== RENDER ===================== */
+const container = document.getElementById('stagesContainer');
+const stageNav = document.getElementById('stageNav');
+const pipelineDiagram = document.getElementById('pipelineDiagram');
+
+function totalTasks(){ return STAGES.reduce((a,s)=>a+s.tasks.length,0); }
+function doneTasks(){
+  let c=0;
+  STAGES.forEach(s=>s.tasks.forEach((t,i)=>{ if(state.tasks[s.id+'_'+i]) c++; }));
+  return c;
+}
+function stageProgress(stage){
+  const total = stage.tasks.length;
+  const done = stage.tasks.filter((t,i)=>state.tasks[stage.id+'_'+i]).length;
+  return {done,total};
+}
+
+function renderPipeline(){
+  pipelineDiagram.innerHTML = STAGES.map((s,i)=>{
+    return `<div class="pnode" onclick="jumpTo('${s.id}')"><div class="n">${s.num}</div><div class="t">${s.title}</div><div class="d">${s.time}</div></div>` + (i<STAGES.length-1?'<div class="parrow"></div>':'');
+  }).join('');
+}
+
+function renderNav(){
+  stageNav.innerHTML = STAGES.map(s=>{
+    const {done,total} = stageProgress(s);
+    return `<div class="stage-chip ${done===total?'done':''}" onclick="jumpTo('${s.id}')">${s.num} ${s.title} (${done}/${total})</div>`;
+  }).join('');
+}
+
+function updateProgressBar(){
+  const pct = Math.round((doneTasks()/totalTasks())*100);
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('statusLine').innerHTML = `→ ${doneTasks()}/${totalTasks()} tasks complete<span class="typed-cursor"></span>`;
+}
+
+function tabsHTML(stage){
+  return `
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="tasks">Tasks</button>
+    <button class="tab-btn" data-tab="tools">AI Tools</button>
+    <button class="tab-btn" data-tab="prompts">Prompts</button>
+    <button class="tab-btn" data-tab="practices">Practices &amp; Mistakes</button>
+    <button class="tab-btn" data-tab="notes">Notes</button>
+  </div>`;
+}
+
+function renderStage(stage){
+  const {done,total} = stageProgress(stage);
+  const isBookmarked = !!state.bookmarks[stage.id];
+  const noteVal = state.notes[stage.id] || '';
+
+  return `
+  <div class="stage" id="stage-${stage.id}">
+    <div class="stage-header" onclick="toggleStage('${stage.id}')">
+      <div>
+        <div class="stage-num">STAGE ${stage.num}</div>
+        <h2>${stage.title}</h2>
+        <p>${stage.desc}</p>
+      </div>
+      <div class="stage-meta">
+        <button class="bookmark-btn ${isBookmarked?'on':''}" onclick="event.stopPropagation();toggleBookmark('${stage.id}')">${isBookmarked?'★':'☆'} save</button>
+        <span class="time-badge">${stage.time} · ${done}/${total}</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="stage-content">
+        ${tabsHTML(stage)}
+
+        <div class="tab-panel active" data-panel="overview">
+          <div class="grid2">
+            <div>
+              <div class="block-label">Objectives</div>
+              <ul class="clean">${stage.objectives.map(o=>`<li>${o}</li>`).join('')}</ul>
+            </div>
+            <div>
+              <div class="block-label">Expected outputs</div>
+              ${stage.outputs.map(o=>`<div class="output-box">${o}</div>`).join('')}
+              <div class="block-label" style="margin-top:16px;">Efficiency tip</div>
+              <div class="output-box" style="border-left-color:var(--amber);">${stage.efficiency}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" data-panel="tasks">
+          <div class="block-label">Task checklist</div>
+          ${stage.tasks.map((t,i)=>{
+            const key = stage.id+'_'+i;
+            const checked = !!state.tasks[key];
+            return `<div class="task-row ${checked?'checked':''}">
+              <input type="checkbox" id="chk-${key}" ${checked?'checked':''} onchange="toggleTask('${stage.id}','${i}')">
+              <label for="chk-${key}">${t}</label>
+            </div>`;
+          }).join('')}
+        </div>
+
+        <div class="tab-panel" data-panel="tools">
+          <div class="block-label">Best AI tools for this stage</div>
+          ${stage.tools.map((t,i)=>`
+            <div class="tool-card ${i===0?'primary':''}">
+              <div class="tool-top"><span class="tool-name">${t.name}</span><span class="tool-tag">${t.tag}</span></div>
+              <p class="tool-why">${t.why}</p>
+              <div class="tool-alt"><b>Alternatives:</b> ${t.alt}</div>
+            </div>`).join('')}
+        </div>
+
+        <div class="tab-panel" data-panel="prompts">
+          <div class="block-label">Prompt examples</div>
+          ${stage.prompts.map(p=>`<div class="prompt-box">${p}<button class="copy-btn" onclick="copyPrompt(this)">copy</button></div>`).join('')}
+        </div>
+
+        <div class="tab-panel" data-panel="practices">
+          <div class="grid2">
+            <div>
+              <div class="block-label">Best practices</div>
+              <ul class="clean practice">${stage.practices.map(p=>`<li>${p}</li>`).join('')}</ul>
+            </div>
+            <div>
+              <div class="block-label">Common mistakes</div>
+              <ul class="clean mistakes">${stage.mistakes.map(m=>`<li>${m}</li>`).join('')}</ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" data-panel="notes">
+          <div class="block-label">Your notes for this stage</div>
+          <textarea class="note" placeholder="Jot down decisions, blockers, or ideas for ${stage.title}..." oninput="saveNote('${stage.id}', this.value)">${noteVal}</textarea>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAll(){
+  container.innerHTML = STAGES.map(renderStage).join('');
+  renderNav();
+  renderPipeline();
+  updateProgressBar();
+  attachTabHandlers();
+}
+
+function attachTabHandlers(){
+  document.querySelectorAll('.stage').forEach(stageEl=>{
+    stageEl.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        e.stopPropagation();
+        const panelName = btn.dataset.tab;
+        stageEl.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        stageEl.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+        btn.classList.add('active');
+        stageEl.querySelector(`.tab-panel[data-panel="${panelName}"]`).classList.add('active');
+      });
+    });
+  });
+}
+
+/* ===================== INTERACTIONS ===================== */
+function toggleStage(id){
+  const el = document.getElementById('stage-'+id);
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.stage.open').forEach(s=>{ if(s!==el) s.classList.remove('open'); });
+  el.classList.toggle('open', !wasOpen);
+}
+function jumpTo(id){
+  const el = document.getElementById('stage-'+id);
+  el.classList.add('open');
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function toggleTask(stageId, idx){
+  const key = stageId+'_'+idx;
+  state.tasks[key] = !state.tasks[key];
+  saveState();
+  renderAll();
+  jumpTo(stageId);
+  document.querySelector(`#stage-${stageId} .tab-btn[data-tab="tasks"]`).click();
+}
+function toggleBookmark(id){
+  state.bookmarks[id] = !state.bookmarks[id];
+  saveState();
+  renderAll();
+  jumpTo(id);
+}
+function saveNote(id, val){
+  state.notes[id] = val;
+  saveState();
+}
+function copyPrompt(btn){
+  const text = btn.parentElement.textContent.replace('copy','').trim();
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig = btn.textContent;
+    btn.textContent = 'copied ✓';
+    setTimeout(()=>btn.textContent = orig, 1400);
+  });
+}
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Clear all saved progress, notes, and bookmarks?')){
+    state = {tasks:{}, notes:{}, bookmarks:{}, theme: state.theme};
+    saveState();
+    renderAll();
+  }
+});
+const themeBtn = document.getElementById('themeBtn');
+function applyTheme(){
+  document.documentElement.classList.toggle('light', state.theme==='light');
+  themeBtn.textContent = state.theme==='light' ? '☀ light' : '☾ dark';
+}
+themeBtn.addEventListener('click', ()=>{
+  state.theme = state.theme==='light' ? 'dark' : 'light';
+  saveState();
+  applyTheme();
+});
+
+/* init */
+applyTheme();
+renderAll();
+</script>
+</body>
+</html>
