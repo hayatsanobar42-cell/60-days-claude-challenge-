@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile/Zero — LinkedIn Roast & Rebuild</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --ink: #0d1117;
+    --panel: #131a24;
+    --panel-2: #171f2b;
+    --edge: rgba(255,255,255,0.08);
+    --edge-strong: rgba(255,255,255,0.16);
+    --text: #eef1f6;
+    --text-dim: #9aa5b4;
+    --text-faint: #5c6675;
+    --red: #ff5d5d;
+    --red-dim: #7a3535;
+    --gold: #f3c04d;
+    --green: #4ade8a;
+    --blue: #6ea8ff;
+    --grad1: linear-gradient(135deg,#ff5d5d 0%, #f3c04d 100%);
+    --grad2: linear-gradient(135deg,#6ea8ff 0%, #4ade8a 100%);
+    --radius: 18px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--ink); color:var(--text); font-family:'Space Grotesk',sans-serif; min-height:100vh;}
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, rgba(255,93,93,0.09), transparent 45%),
+      radial-gradient(circle at 85% 10%, rgba(110,168,255,0.10), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(243,192,77,0.07), transparent 50%),
+      var(--ink);
+    padding: 40px 20px 80px;
+  }
+  ::selection{ background: var(--gold); color:#111; }
+  .wrap{ max-width: 920px; margin: 0 auto; }
+
+  /* ---------- HEADER ---------- */
+  .masthead{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:14px; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand .mark{ width:38px;height:38px;border-radius:10px; background:var(--grad1); display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:700; color:#111; font-size:19px; box-shadow: 0 8px 24px rgba(255,93,93,0.28);}
+  .brand .name{ font-family:'Fraunces',serif; font-weight:600; font-size:20px; letter-spacing:0.2px; }
+  .brand .name span{ color:var(--text-faint); font-weight:300; }
+  .tagline{ font-size:12.5px; color: var(--text-faint); font-family:'JetBrains Mono',monospace; letter-spacing:0.3px; }
+
+  .hero{
+    border:1px solid var(--edge); border-radius: 22px; padding: 46px 40px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01));
+    backdrop-filter: blur(20px);
+    position:relative; overflow:hidden; margin-bottom:28px;
+  }
+  .hero::before{
+    content:""; position:absolute; top:-40%; right:-15%; width:420px;height:420px; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,93,93,0.14), transparent 65%); pointer-events:none;
+  }
+  .hero h1{ font-family:'Fraunces',serif; font-weight:600; font-size:clamp(28px,4vw,42px); line-height:1.12; max-width:640px; letter-spacing:-0.5px;}
+  .hero h1 em{ font-style:italic; background:var(--grad1); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero p.sub{ margin-top:16px; color:var(--text-dim); font-size:15.5px; max-width:520px; line-height:1.6; }
+  .hero .stat-row{ display:flex; gap:28px; margin-top:28px; flex-wrap:wrap; }
+  .stat{ font-family:'JetBrains Mono',monospace; }
+  .stat b{ display:block; font-size:22px; color:var(--text); font-family:'Fraunces',serif; font-weight:600;}
+  .stat span{ font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.6px; }
+
+  /* ---------- CARD SHELL ---------- */
+  .card{
+    border:1px solid var(--edge); border-radius: var(--radius); padding: 32px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012));
+    backdrop-filter: blur(18px);
+    margin-bottom: 22px;
+    animation: rise .5s ease both;
+  }
+  @keyframes rise{ from{ opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+  .card h2{ font-family:'Fraunces',serif; font-weight:600; font-size:22px; margin-bottom:6px; display:flex; align-items:center; gap:10px;}
+  .card .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; display:block; }
+
+  /* ---------- PROGRESS ---------- */
+  .steps{ display:flex; gap:6px; margin-bottom:26px; }
+  .steps i{ flex:1; height:3px; border-radius:3px; background:var(--edge); overflow:hidden; position:relative; }
+  .steps i.done::after, .steps i.active::after{ content:""; position:absolute; inset:0; background:var(--grad1); }
+  .steps i.pending::after{ display:none; }
+
+  /* ---------- FORM ---------- */
+  .field{ margin-bottom:20px; }
+  .field label{ display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px; font-weight:500; }
+  .field label .hint{ color:var(--text-faint); font-weight:400; font-size:12px; }
+  .field input, .field textarea{
+    width:100%; background: rgba(255,255,255,0.03); border:1px solid var(--edge); color:var(--text);
+    border-radius:12px; padding:13px 15px; font-family:'Space Grotesk',sans-serif; font-size:14.5px;
+    transition: border-color .2s, background .2s;
+  }
+  .field textarea{ resize:vertical; min-height:90px; line-height:1.5; }
+  .field input:focus, .field textarea:focus{ outline:none; border-color: var(--gold); background: rgba(255,255,255,0.05); }
+  .field input::placeholder, .field textarea::placeholder{ color: var(--text-faint); }
+
+  .choice-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .choice{
+    border:1px solid var(--edge); padding:10px 16px; border-radius:30px; font-size:13.5px; cursor:pointer;
+    color:var(--text-dim); transition: all .15s; background: rgba(255,255,255,0.02);
+  }
+  .choice:hover{ border-color: var(--edge-strong); color:var(--text); }
+  .choice.sel{ background:var(--grad1); color:#161010; border-color:transparent; font-weight:600; }
+
+  .btn-row{ display:flex; justify-content:space-between; align-items:center; margin-top:8px; gap:12px;}
+  button{ font-family:'Space Grotesk',sans-serif; cursor:pointer; border:none; }
+  .btn-primary{
+    background: var(--grad1); color:#1a1210; font-weight:700; font-size:14.5px; padding:14px 26px;
+    border-radius: 14px; box-shadow: 0 10px 30px rgba(255,93,93,0.25); transition: transform .15s, box-shadow .15s;
+  }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 14px 36px rgba(255,93,93,0.35); }
+  .btn-primary:disabled{ opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-ghost{ background:transparent; color:var(--text-faint); font-size:13.5px; padding:12px 8px; }
+  .btn-ghost:hover{ color:var(--text); }
+
+  /* ---------- LOADING ---------- */
+  .loading-wrap{ text-align:center; padding: 70px 20px; }
+  .spinner{ width:56px;height:56px; margin:0 auto 26px; border-radius:50%; border:3px solid var(--edge);
+    border-top-color: var(--gold); animation: spin 1s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .loading-msg{ font-family:'JetBrains Mono',monospace; color:var(--text-dim); font-size:13.5px; min-height:20px; }
+
+  /* ---------- RESULTS: TABS ---------- */
+  .tabs{ display:flex; gap:4px; margin-bottom:26px; border-bottom:1px solid var(--edge); overflow-x:auto; }
+  .tab{ padding:12px 18px; font-size:13.5px; color:var(--text-faint); white-space:nowrap; border-bottom:2px solid transparent; font-weight:500;}
+  .tab.active{ color:var(--text); border-color: var(--gold); }
+  .tab:hover{ color:var(--text); }
+  .panel{ display:none; animation: rise .4s ease both; }
+  .panel.active{ display:block; }
+
+  /* score card */
+  .score-hero{ text-align:center; padding: 30px 10px 10px; }
+  .score-big{ font-family:'Fraunces',serif; font-size:70px; font-weight:700; line-height:1; }
+  .score-big span{ font-size:26px; color:var(--text-faint); font-weight:400; }
+  .score-label{ font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint); margin-top:6px;}
+
+  .sect-row{ border:1px solid var(--edge); border-radius:14px; padding:20px; margin-bottom:16px; background:rgba(255,255,255,0.02); }
+  .sect-row .top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;}
+  .sect-row .top h3{ font-family:'Fraunces',serif; font-size:17px; font-weight:600; }
+  .sect-score{ font-family:'JetBrains Mono',monospace; font-weight:600; font-size:14px; padding:4px 12px; border-radius:20px; }
+  .bar-track{ height:6px; border-radius:6px; background:var(--edge); overflow:hidden; margin:10px 0 14px;}
+  .bar-fill{ height:100%; border-radius:6px; background:var(--grad1); }
+  .quote{ border-left:2px solid var(--red); padding:8px 14px; font-style:italic; color:var(--text-dim); font-size:13.5px; margin:12px 0; background:rgba(255,93,93,0.05); border-radius:0 8px 8px 0;}
+  .why{ display:flex; gap:10px; margin:10px 0; font-size:13.5px; line-height:1.55; color:var(--text-dim); }
+  .why .ic{ flex-shrink:0; }
+
+  /* before/after */
+  .ba{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin:14px 0; }
+  @media(max-width:640px){ .ba{ grid-template-columns: 1fr; } }
+  .ba-box{ border-radius:12px; padding:16px; font-size:13.5px; line-height:1.55; }
+  .ba-box.before{ background:rgba(255,93,93,0.06); border:1px solid rgba(255,93,93,0.18); }
+  .ba-box.after{ background:rgba(74,222,138,0.06); border:1px solid rgba(74,222,138,0.2); }
+  .ba-box .lab{ font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:block; }
+  .ba-box.before .lab{ color:var(--red); }
+  .ba-box.after .lab{ color:var(--green); }
+
+  .opt-card{ border:1px solid var(--edge); border-radius:14px; padding:18px; margin-bottom:12px; background:rgba(255,255,255,0.02); position:relative;}
+  .opt-tag{ display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:var(--blue); margin-bottom:8px;}
+  .opt-text{ font-size:15px; line-height:1.5; font-weight:500; }
+  .copy-btn{ position:absolute; top:14px; right:14px; background:rgba(255,255,255,0.06); border:1px solid var(--edge); color:var(--text-faint); font-size:11px; padding:5px 10px; border-radius:8px; }
+  .copy-btn:hover{ color:var(--text); border-color:var(--edge-strong); }
+
+  .kw-chip{ display:inline-block; background:rgba(110,168,255,0.1); border:1px solid rgba(110,168,255,0.25); color:var(--blue); font-size:12px; padding:5px 12px; border-radius:20px; margin:3px 4px 3px 0; font-family:'JetBrains Mono',monospace;}
+
+  .skill-list{ list-style:none; }
+  .skill-list li{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--edge); font-size:14px; }
+  .skill-list li:last-child{ border:none; }
+  .skill-list .num{ color:var(--text-faint); font-family:'JetBrains Mono',monospace; margin-right:10px; }
+
+  .day-card{ border:1px solid var(--edge); border-radius:14px; padding:20px; margin-bottom:14px; background:rgba(255,255,255,0.02); }
+  .day-card .day-head{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .day-num{ font-family:'Fraunces',serif; font-weight:700; font-size:20px; color:var(--gold); }
+  .day-title{ font-weight:600; font-size:15px; }
+  .day-body{ font-size:13.5px; color:var(--text-dim); line-height:1.6; }
+  .post-draft{ background:rgba(255,255,255,0.03); border:1px solid var(--edge); border-radius:10px; padding:14px; margin-top:10px; font-size:13.5px; line-height:1.6; white-space:pre-wrap; position:relative; }
+  .checklist{ list-style:none; margin-top:8px;}
+  .checklist li{ padding:6px 0 6px 26px; position:relative; font-size:13.5px; color:var(--text-dim);}
+  .checklist li::before{ content:"○"; position:absolute; left:0; color:var(--gold); }
+
+  .summary-card{
+    border-radius:20px; padding:34px; background: linear-gradient(160deg, rgba(255,93,93,0.12), rgba(243,192,77,0.08));
+    border:1px solid rgba(243,192,77,0.3); position:relative; text-align:center;
+  }
+  .summary-card h3{ font-family:'Fraunces',serif; font-size:20px; margin-bottom:18px; }
+  .summary-scores{ display:flex; justify-content:center; gap:26px; margin:20px 0; align-items:center; }
+  .summary-scores .arrow{ color:var(--text-faint); font-size:22px; }
+  .summary-scores b{ font-family:'Fraunces',serif; font-size:36px; display:block; }
+  .summary-list{ text-align:left; max-width:480px; margin:20px auto; font-size:14px; color:var(--text-dim); line-height:1.8; }
+  .summary-highlight{ margin-top:16px; font-size:14px; color:var(--gold); font-weight:600; }
+
+  .err{ color:var(--red); background:rgba(255,93,93,0.08); border:1px solid rgba(255,93,93,0.25); padding:14px 16px; border-radius:12px; font-size:13.5px; margin-top:16px; }
+
+  a{ color: var(--blue); }
+  .footer-note{ text-align:center; font-size:11.5px; color:var(--text-faint); margin-top:30px; font-family:'JetBrains Mono',monospace; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="brand">
+      <div class="mark">P/0</div>
+      <div class="name">Profile<span>/Zero</span></div>
+    </div>
+    <div class="tagline">roast → rebuild → activate</div>
+  </div>
+
+  <div class="hero" id="heroBlock">
+    <h1>Your LinkedIn isn't broken.<br>It's just <em>invisible.</em></h1>
+    <p class="sub">A brutally honest recruiter-eye audit of your profile, a full rewrite, and a 7-day plan to make it actually work for you.</p>
+    <div class="stat-row">
+      <div class="stat"><b>50,000+</b><span>profiles reviewed</span></div>
+      <div class="stat"><b>&lt;3 sec</b><span>recruiter attention span</span></div>
+      <div class="stat"><b>7 days</b><span>to activation</span></div>
+    </div>
+  </div>
+
+  <div class="card" id="formCard">
+    <div class="steps" id="stepsBar"></div>
+    <div id="formInner"></div>
+  </div>
+
+  <div class="card" id="loadingCard" style="display:none;">
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <div class="loading-msg" id="loadingMsg">Reading your profile like a recruiter would…</div>
+    </div>
+  </div>
+
+  <div id="resultsRoot" style="display:none;"></div>
+
+  <div class="footer-note">Nothing here is fabricated — every rewrite uses only what you provided.</div>
+</div>
+
+<script>
+const state = {
+  hasProfile: null,
+  step: 0,
+  data: {}
+};
+
+const withProfileFields = [
+  { key:'headline', label:'Current Headline', hint:'copy exactly as it appears', type:'input', placeholder:'e.g. Marketing Professional | Open to Work' },
+  { key:'about', label:'About Section', hint:'paste the full text', type:'textarea', placeholder:'Paste your About section here…' },
+  { key:'experience', label:'Most Recent Experience Entry', hint:'title, company, and bullet points', type:'textarea', placeholder:'e.g. Marketing Coordinator, Acme Co.\n- Responsible for social media\n- Assisted with campaigns' },
+  { key:'skills', label:'Top Skills', hint:'5–10, comma separated', type:'input', placeholder:'e.g. SEO, Content Strategy, Excel, Public Speaking' },
+  { key:'goal', label:'Target Goal', hint:'what do you want this profile to do for you?', type:'choice', options:['Land a Job','Attract Clients','Build Thought Leadership','Grow My Network'] }
+];
+
+const noProfileFields = [
+  { key:'nameRole', label:'Name & Current Role or Student Status', hint:'', type:'input', placeholder:'e.g. Priya Sharma, final-year CS student' },
+  { key:'topSkills', label:'Top 3 Skills', hint:'', type:'input', placeholder:'e.g. Python, UX research, storytelling' },
+  { key:'achievements', label:"1–2 Achievements or Projects You're Proud Of", hint:'', type:'textarea', placeholder:'e.g. Built and launched a campus app with 2,000 users' },
+  { key:'audience', label:'Who Do You Want to Attract?', hint:'', type:'choice', options:['Recruiters','Clients','Collaborators'] },
+  { key:'different', label:'What Makes You Different?', hint:'one sentence', type:'input', placeholder:'e.g. I turn messy data into decisions non-analysts actually use' }
+];
+
+function renderIntro(){
+  document.getElementById('formInner').innerHTML = `
+    <span class="eyebrow">Step 0 · Setup</span>
+    <h2>Do you have a LinkedIn profile yet?</h2>
+    <p style="color:var(--text-dim); font-size:14px; margin:10px 0 22px;">This determines which questions we ask.</p>
+    <div class="choice-row">
+      <div class="choice" data-v="yes">Yes, I have one to audit</div>
+      <div class="choice" data-v="no">No, help me build one from scratch</div>
+    </div>
+  `;
+  document.querySelectorAll('#formInner .choice').forEach(el=>{
+    el.onclick = ()=>{
+      state.hasProfile = el.dataset.v === 'yes';
+      state.step = 1;
+      renderStep();
+    };
+  });
+  updateSteps(0, 1);
+}
+
+function fields(){ return state.hasProfile ? withProfileFields : noProfileFields; }
+
+function updateSteps(current, total){
+  const bar = document.getElementById('stepsBar');
+  bar.innerHTML = '';
+  for(let i=0;i<total;i++){
+    const i_ = document.createElement('i');
+    i_.className = i < current ? 'done' : (i===current ? 'active':'pending');
+    bar.appendChild(i_);
+  }
+}
+
+function renderStep(){
+  const f = fields();
+  const total = f.length + 1;
+  updateSteps(state.step, total);
+  const field = f[state.step - 1];
+  const val = state.data[field.key] || '';
+
+  let inputHtml = '';
+  if(field.type === 'input'){
+    inputHtml = `<input type="text" id="fldInput" placeholder="${field.placeholder||''}" value="${escapeHtml(val)}">`;
+  } else if(field.type === 'textarea'){
+    inputHtml = `<textarea id="fldInput" placeholder="${field.placeholder||''}">${escapeHtml(val)}</textarea>`;
+  } else if(field.type === 'choice'){
+    inputHtml = `<div class="choice-row" id="fldChoices">` +
+      field.options.map(o=>`<div class="choice ${val===o?'sel':''}" data-v="${o}">${o}</div>`).join('') +
+      `</div>`;
+  }
+
+  document.getElementById('formInner').innerHTML = `
+    <span class="eyebrow">Step ${state.step} of ${f.length}</span>
+    <h2>${field.label}</h2>
+    ${field.hint ? `<p style="color:var(--text-faint); font-size:13px; margin:8px 0 20px;">${field.hint}</p>` : '<div style="margin-bottom:14px;"></div>'}
+    <div class="field">${inputHtml}</div>
+    <div class="btn-row">
+      <button class="btn-ghost" id="backBtn">← Back</button>
+      <button class="btn-primary" id="nextBtn">${state.step === f.length ? 'Generate My Roast →' : 'Next →'}</button>
+    </div>
+  `;
+
+  if(field.type === 'choice'){
+    document.querySelectorAll('#fldChoices .choice').forEach(el=>{
+      el.onclick = ()=>{
+        document.querySelectorAll('#fldChoices .choice').forEach(c=>c.classList.remove('sel'));
+        el.classList.add('sel');
+        state.data[field.key] = el.dataset.v;
+      };
+    });
+  }
+
+  document.getElementById('backBtn').onclick = ()=>{
+    if(field.type !== 'choice'){
+      const el = document.getElementById('fldInput');
+      if(el) state.data[field.key] = el.value;
+    }
+    state.step -= 1;
+    if(state.step === 0){ renderIntro(); } else { renderStep(); }
+  };
+
+  document.getElementById('nextBtn').onclick = ()=>{
+    if(field.type === 'choice'){
+      if(!state.data[field.key]){ shake(); return; }
+    } else {
+      const el = document.getElementById('fldInput');
+      const v = el.value.trim();
+      if(!v){ shake(); return; }
+      state.data[field.key] = v;
+    }
+    if(state.step === f.length){
+      generate();
+    } else {
+      state.step += 1;
+      renderStep();
+    }
+  };
+}
+
+function shake(){
+  const c = document.getElementById('formCard');
+  c.style.animation = 'none';
+  requestAnimationFrame(()=>{ c.style.animation = 'shakeX .4s'; });
+}
+const styleShake = document.createElement('style');
+styleShake.textContent = `@keyframes shakeX{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}`;
+document.head.appendChild(styleShake);
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+renderIntro();
+
+// ---------------- GENERATION ----------------
+
+const loadingMsgs = [
+  "Reading your profile like a recruiter would…",
+  "Timing the 3-second scroll test…",
+  "Scoring your headline for search visibility…",
+  "Rewriting bullets with actual verbs…",
+  "Building your 7-day activation plan…",
+  "Formatting the receipts…"
+];
+
+function buildPrompt(){
+  const hp = state.hasProfile;
+  const d = state.data;
+  let inputBlock = '';
+  if(hp){
+    inputBlock = `
+PROFILE MODE: EXISTING PROFILE
+
+Current Headline: ${d.headline}
+About Section: ${d.about}
+Most Recent Experience Entry: ${d.experience}
+Top Skills: ${d.skills}
+Target Goal: ${d.goal}
+`;
+  } else {
+    inputBlock = `
+PROFILE MODE: NO PROFILE YET (building from scratch)
+
+Name & Current Role/Student Status: ${d.nameRole}
+Top 3 Skills: ${d.topSkills}
+Achievements/Projects: ${d.achievements}
+Who They Want to Attract: ${d.audience}
+What Makes Them Different: ${d.different}
+`;
+  }
+
+  return `You are a LinkedIn Optimization Expert, Personal Branding Consultant, and ex-Recruiter who has reviewed 50,000+ profiles. Roast the following profile honestly, rebuild it, and produce a 7-day action plan.
+
+${inputBlock}
+
+Rules:
+- Use ONLY the information provided above. Never invent achievements, roles, companies, or metrics.
+- If information is thin, work with what's given and note in "invisibleCost" or elsewhere what's missing — don't fabricate specifics.
+- If PROFILE MODE is "no profile yet", treat the 5 answers as the raw material: build a headline, About section, a "recent experience" analogue from their achievements/projects, and skills from what they gave you. Score the BEFORE state honestly low/thin since there's no profile yet, and focus the roast on what's missing.
+- Tone: direct, like a brutally honest friend who wants them to succeed. Zero fluff.
+
+Respond with ONLY valid JSON (no markdown fences, no preamble, no commentary) matching EXACTLY this schema:
+
+{
+  "overallBefore": number (0-100),
+  "overallAfter": number (0-100),
+  "sections": [
+    {
+      "name": "Headline" | "About — First 2 Lines" | "About — Full Section" | "Experience" | "Skills & Keywords",
+      "scoreBefore": number (0-10),
+      "scoreAfter": number (0-10),
+      "reaction": "recruiter's real 3-second reaction, one sentence, quoting their own words where relevant",
+      "problem": "specific problem, quoting their own words back at them",
+      "whyItHurts": "how recruiters/hiring managers/clients interpret it",
+      "invisibleCost": "what opportunities they're losing without knowing"
+    }
+  ],
+  "headlineOptions": [
+    { "tag": "Keyword-Optimized", "text": "...", "whenToUse": "..." },
+    { "tag": "Value-Proposition", "text": "...", "whenToUse": "..." },
+    { "tag": "Authority", "text": "...", "whenToUse": "..." }
+  ],
+  "aboutRewrite": {
+    "hook": "line 1-2 text",
+    "story": "line 3-5 text",
+    "proof": "line 6-8 text",
+    "cta": "last line text",
+    "keywords": ["keyword1","keyword2", "..."]
+  },
+  "experienceRewrite": [
+    { "before": "old bullet", "after": "new bullet" }
+  ],
+  "skills": {
+    "toAdd": ["skill1","skill2","..."],
+    "toRemove": ["skill1","..."],
+    "toPin": ["skill1","skill2","skill3"]
+  },
+  "sevenDayPlan": [
+    { "day": 1, "title": "...", "body": "...", "checklist": ["item1","item2"] },
+    { "day": 2, "title": "...", "body": "...", "postDraft": "full post text under 1300 chars" },
+    { "day": 3, "title": "...", "body": "...", "targets": "who to target", "messageTemplate": "under 300 chars" },
+    { "day": 4, "title": "...", "body": "explain the Value Comment formula: Agree + Add Insight + Ask a Question" },
+    { "day": 5, "title": "...", "body": "...", "postDraft": "full post text under 1300 chars" },
+    { "day": 6, "title": "...", "body": "..." },
+    { "day": 7, "title": "...", "body": "what the numbers mean and what to adjust" }
+  ],
+  "summary": {
+    "topMistakes": ["mistake1","mistake2","mistake3"],
+    "biggestDifference": "the #1 thing that made the biggest difference"
+  }
+}`;
+}
+
+async function generate(){
+  document.getElementById('formCard').style.display = 'none';
+  document.getElementById('loadingCard').style.display = 'block';
+  let mi = 0;
+  const msgEl = document.getElementById('loadingMsg');
+  const interval = setInterval(()=>{
+    mi = (mi+1) % loadingMsgs.length;
+    msgEl.textContent = loadingMsgs[mi];
+  }, 1400);
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 4000,
+        messages: [{ role: "user", content: buildPrompt() }]
+      })
+    });
+    const raw = await response.json();
+    const textBlocks = (raw.content || []).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    const clean = textBlocks.replace(/```json/g,'').replace(/```/g,'').trim();
+    const result = JSON.parse(clean);
+    clearInterval(interval);
+    renderResults(result);
+  } catch(err){
+    clearInterval(interval);
+    document.getElementById('loadingCard').innerHTML = `
+      <div style="padding:20px;">
+        <div class="err">Something went wrong generating your audit: ${escapeHtml(err.message || String(err))}. Please try again.</div>
+        <div style="margin-top:16px;"><button class="btn-primary" onclick="location.reload()">Start Over</button></div>
+      </div>`;
+  }
+}
+
+// ---------------- RESULTS RENDER ----------------
+
+function scoreColor(pct){
+  if(pct >= 75) return 'var(--green)';
+  if(pct >= 45) return 'var(--gold)';
+  return 'var(--red)';
+}
+
+function renderResults(r){
+  window.__lastResult = r;
+  document.getElementById('loadingCard').style.display = 'none';
+  document.getElementById('heroBlock').style.display = 'none';
+  const root = document.getElementById('resultsRoot');
+  root.style.display = 'block';
+
+  const tabs = ['Report Card','Rebuild','Scorecard','7-Day Plan','Recap'];
+
+  root.innerHTML = `
+    <div class="tabs" id="tabBar">
+      ${tabs.map((t,i)=>`<div class="tab ${i===0?'active':''}" data-i="${i}">${t}</div>`).join('')}
+    </div>
+    <div class="panel active" id="panel-0">${renderReportCard(r)}</div>
+    <div class="panel" id="panel-1">${renderRebuild(r)}</div>
+    <div class="panel" id="panel-2">${renderScorecard(r)}</div>
+    <div class="panel" id="panel-3">${renderPlan(r)}</div>
+    <div class="panel" id="panel-4">${renderRecap(r)}</div>
+  `;
+
+  document.querySelectorAll('#tabBar .tab').forEach(t=>{
+    t.onclick = ()=>{
+      document.querySelectorAll('#tabBar .tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('panel-'+t.dataset.i).classList.add('active');
+      window.scrollTo({top: document.getElementById('tabBar').offsetTop - 20, behavior:'smooth'});
+    };
+  });
+
+  document.querySelectorAll('.copy-btn').forEach(b=>{
+    b.onclick = ()=>{
+      navigator.clipboard.writeText(decodeURIComponent(b.dataset.copy));
+      const orig = b.textContent;
+      b.textContent = 'Copied ✓';
+      setTimeout(()=>b.textContent = orig, 1500);
+    };
+  });
+}
+
+function renderReportCard(r){
+  const pct = r.overallBefore;
+  return `
+    <div class="card">
+      <div class="score-hero">
+        <div class="score-big" style="color:${scoreColor(pct)}">${pct}<span>/100</span></div>
+        <div class="score-label">Overall Profile Strength — Before</div>
+      </div>
+    </div>
+    ${r.sections.map(s=>`
+      <div class="card sect-row" style="margin-bottom:0; margin-top:22px;">
+        <div class="top">
+          <h3>${s.name}</h3>
+          <div class="sect-score" style="background:rgba(255,93,93,0.12); color:var(--red); border:1px solid rgba(255,93,93,0.3);">${s.scoreBefore}/10</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${s.scoreBefore*10}%; background:linear-gradient(90deg,var(--red),var(--gold));"></div></div>
+        <div class="quote">"${escapeHtml(s.reaction)}"</div>
+        <div class="why"><span class="ic">❌</span><div><b>The problem:</b> ${escapeHtml(s.problem)}</div></div>
+        <div class="why"><span class="ic">🧠</span><div><b>Why it hurts:</b> ${escapeHtml(s.whyItHurts)}</div></div>
+        <div class="why"><span class="ic">🔍</span><div><b>Invisible cost:</b> ${escapeHtml(s.invisibleCost)}</div></div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderRebuild(r){
+  let html = `<div class="card"><h2>Headline Options</h2><p style="color:var(--text-dim); font-size:13.5px; margin-bottom:18px;">Formula: [Role/Identity] | [Who I Help or What I Do] | [Proof or Differentiator]</p>`;
+  r.headlineOptions.forEach(o=>{
+    html += `
+      <div class="opt-card">
+        <button class="copy-btn" data-copy="${encodeURIComponent(o.text)}">Copy</button>
+        <span class="opt-tag">${escapeHtml(o.tag)}</span>
+        <div class="opt-text">${escapeHtml(o.text)}</div>
+        <div style="margin-top:10px; font-size:12.5px; color:var(--text-faint);">${escapeHtml(o.whenToUse)}</div>
+      </div>`;
+  });
+  html += `</div>`;
+
+  const ab = r.aboutRewrite;
+  const fullAbout = `${ab.hook}\n\n${ab.story}\n\n${ab.proof}\n\n${ab.cta}`;
+  html += `
+    <div class="card">
+      <h2>About Section — Rewrite</h2>
+      <div class="opt-card" style="margin-top:16px;">
+        <button class="copy-btn" data-copy="${encodeURIComponent(fullAbout)}">Copy All</button>
+        <span class="opt-tag" style="color:var(--gold);">The Hook</span>
+        <div class="opt-text" style="font-size:14px; font-weight:400;">${escapeHtml(ab.hook)}</div>
+      </div>
+      <div style="font-size:13.5px; color:var(--text-dim); line-height:1.7; padding:0 4px; margin-bottom:14px;">
+        <p style="margin-bottom:10px;"><b style="color:var(--text);">The Story:</b> ${escapeHtml(ab.story)}</p>
+        <p style="margin-bottom:10px;"><b style="color:var(--text);">Proof:</b> ${escapeHtml(ab.proof)}</p>
+        <p><b style="color:var(--text);">CTA:</b> ${escapeHtml(ab.cta)}</p>
+      </div>
+      <div style="margin-top:16px;">
+        ${ab.keywords.map(k=>`<span class="kw-chip">${escapeHtml(k)}</span>`).join('')}
+      </div>
+    </div>
+  `;
+
+  html += `<div class="card"><h2>Experience — Top Entry</h2>`;
+  r.experienceRewrite.forEach(b=>{
+    html += `
+      <div class="ba">
+        <div class="ba-box before"><span class="lab">Before</span>${escapeHtml(b.before)}</div>
+        <div class="ba-box after"><span class="lab">After</span>${escapeHtml(b.after)}</div>
+      </div>`;
+  });
+  html += `</div>`;
+
+  html += `
+    <div class="card">
+      <h2>Skills Recommendations</h2>
+      <div class="ba" style="grid-template-columns: 1fr 1fr;">
+        <div>
+          <div class="lab" style="color:var(--green); font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; margin-bottom:10px;">Add (priority order)</div>
+          <ul class="skill-list">${r.skills.toAdd.map((s,i)=>`<li><span><span class="num">${i+1}</span>${escapeHtml(s)}</span></li>`).join('')}</ul>
+        </div>
+        <div>
+          <div class="lab" style="color:var(--red); font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; margin-bottom:10px;">Remove</div>
+          <ul class="skill-list">${r.skills.toRemove.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <span class="opt-tag">Pin to Top</span><br>
+        ${r.skills.toPin.map(s=>`<span class="kw-chip" style="color:var(--gold); background:rgba(243,192,77,0.1); border-color:rgba(243,192,77,0.3);">${escapeHtml(s)}</span>`).join('')}
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+function renderScorecard(r){
+  let html = `<div class="card">`;
+  r.sections.forEach(s=>{
+    const change = s.scoreAfter - s.scoreBefore;
+    html += `
+      <div class="sect-row">
+        <div class="top">
+          <h3>${escapeHtml(s.name)}</h3>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:13px;">
+            <span style="color:var(--red);">${s.scoreBefore}</span> → <span style="color:var(--green);">${s.scoreAfter}</span>
+            <span style="color:var(--gold); margin-left:6px;">(+${change})</span>
+          </div>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${s.scoreBefore*10}%; background:var(--red);"></div></div>
+        <div class="bar-track" style="margin-top:-6px;"><div class="bar-fill" style="width:${s.scoreAfter*10}%; background:var(--green);"></div></div>
+      </div>`;
+  });
+  html += `</div>`;
+  html += `
+    <div class="card score-hero">
+      <div class="score-label" style="margin-bottom:10px;">OVERALL PROFILE STRENGTH</div>
+      <div style="display:flex; justify-content:center; align-items:center; gap:20px;">
+        <div class="score-big" style="font-size:44px; color:var(--red);">${r.overallBefore}</div>
+        <div style="color:var(--text-faint); font-size:26px;">→</div>
+        <div class="score-big" style="font-size:44px; color:var(--green);">${r.overallAfter}</div>
+      </div>
+      <div style="margin-top:10px; color:var(--gold); font-family:'JetBrains Mono',monospace; font-size:13px;">+${r.overallAfter - r.overallBefore} points</div>
+    </div>
+  `;
+  return html;
+}
+
+function renderPlan(r){
+  let html = '';
+  r.sevenDayPlan.forEach(d=>{
+    html += `
+      <div class="day-card">
+        <div class="day-head">
+          <div class="day-num">${String(d.day).padStart(2,'0')}</div>
+          <div class="day-title">${escapeHtml(d.title || '')}</div>
+        </div>
+        <div class="day-body">${escapeHtml(d.body || '')}</div>
+        ${d.checklist ? `<ul class="checklist">${d.checklist.map(c=>`<li>${escapeHtml(c)}</li>`).join('')}</ul>` : ''}
+        ${d.postDraft ? `<div class="post-draft">${escapeHtml(d.postDraft)}<button class="copy-btn" style="position:static; float:right; margin-top:10px;" data-copy="${encodeURIComponent(d.postDraft)}">Copy Post</button></div>` : ''}
+        ${d.targets ? `<div style="margin-top:10px; font-size:13px; color:var(--text-dim);"><b style="color:var(--text);">Target:</b> ${escapeHtml(d.targets)}</div>` : ''}
+        ${d.messageTemplate ? `<div class="post-draft">${escapeHtml(d.messageTemplate)}</div>` : ''}
+      </div>`;
+  });
+  return `<div>${html}</div>`;
+}
+
+function renderRecap(r){
+  return `
+    <div class="summary-card">
+      <h3>I let AI roast my LinkedIn profile today. Here's what changed 👇</h3>
+      <div class="summary-scores">
+        <div><b style="color:var(--red);">${r.overallBefore}</b><span style="font-size:11px; color:var(--text-faint);">BEFORE</span></div>
+        <div class="arrow">→</div>
+        <div><b style="color:var(--green);">${r.overallAfter}</b><span style="font-size:11px; color:var(--text-faint);">AFTER</span></div>
+      </div>
+      <div class="summary-list">
+        <b>Top 3 mistakes I was making:</b>
+        <ol style="margin-top:8px; padding-left:18px;">
+          ${r.summary.topMistakes.map(m=>`<li style="margin-bottom:6px;">${escapeHtml(m)}</li>`).join('')}
+        </ol>
+      </div>
+      <div class="summary-highlight">The #1 thing that made the biggest difference: ${escapeHtml(r.summary.biggestDifference)}</div>
+      <div style="margin-top:22px;">
+        <button class="btn-primary" id="copyRecap">Copy as Shareable Text</button>
+      </div>
+    </div>
+  `;
+}
+
+document.addEventListener('click', (e)=>{
+  if(e.target && e.target.id === 'copyRecap'){
+    const r = window.__lastResult;
+    if(!r) return;
+    const text = `I let AI roast my LinkedIn profile today. Here's what changed:\n\nBefore: ${r.overallBefore}/100\nAfter: ${r.overallAfter}/100\n\nTop 3 mistakes I was making:\n${r.summary.topMistakes.map((m,i)=>`${i+1}. ${m}`).join('\n')}\n\nThe #1 thing that made the biggest difference: ${r.summary.biggestDifference}`;
+    navigator.clipboard.writeText(text);
+    e.target.textContent = 'Copied ✓';
+    setTimeout(()=>{ e.target.textContent = 'Copy as Shareable Text'; }, 1500);
+  }
+});
+</script>
+</body>
+</html>
