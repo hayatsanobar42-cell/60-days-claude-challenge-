@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Report — Data Analytics vs Machine Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-main: #0f0f14;
+    --bg-card: #1a1a24;
+    --bg-card-alt: #1e1e2e;
+    --text-primary: #f0f0f5;
+    --text-secondary: #8888a0;
+    --accent-green: #34d399;
+    --accent-red: #f87171;
+    --accent-blue: #60a5fa;
+    --accent-gold: #fbbf24;
+    --accent-purple: #a78bfa;
+    --border-subtle: rgba(255,255,255,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.7;
+    padding: 0 16px 40px;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  /* HEADER */
+  header {
+    padding: 40px 8px 24px;
+    text-align: center;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-top: 8px;
+  }
+  header .date {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .gradient-line {
+    height: 2px;
+    margin-top: 20px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-gold));
+    border-radius: 2px;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 28px;
+    margin-top: 28px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    border-left: 4px solid var(--accent-blue);
+    transition: transform 0.2s ease;
+  }
+  .card:hover { transform: translateY(-2px); }
+
+  .card.green { border-left-color: var(--accent-green); }
+  .card.purple { border-left-color: var(--accent-purple); }
+  .card.red { border-left-color: var(--accent-red); }
+  .card.gold {
+    border-left-color: var(--accent-gold);
+    background: var(--bg-card-alt);
+    padding: 32px;
+    box-shadow: 0 0 20px rgba(251,191,36,0.15), 0 4px 24px rgba(0,0,0,0.3);
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .title-blue { color: var(--accent-blue); }
+  .title-green { color: var(--accent-green); }
+  .title-purple { color: var(--accent-purple); }
+  .title-red { color: var(--accent-red); }
+  .title-gold { color: var(--accent-gold); }
+
+  .label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    margin-top: 14px;
+    margin-bottom: 4px;
+  }
+  .label:first-of-type { margin-top: 0; }
+
+  p, li { font-size: 15px; }
+  ul { padding-left: 20px; margin-top: 4px; }
+  li { margin-bottom: 4px; }
+
+  /* OPTION CARDS (section 2) */
+  .option-block {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 16px;
+  }
+  .option-block:first-of-type { margin-top: 0; }
+  .option-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .opt-a .option-name { color: var(--accent-blue); }
+  .opt-b .option-name { color: var(--accent-green); }
+
+  /* MATRIX */
+  .matrix-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .matrix-label {
+    width: 40%;
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding-right: 10px;
+  }
+  .matrix-bars { width: 60%; display: flex; flex-direction: column; gap: 6px; }
+  .bar-container {
+    height: 28px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    width: 0%;
+    animation: growBar 0.8s ease-out forwards;
+  }
+  .bar-a { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+  .bar-b { background: linear-gradient(90deg, #34d399, #10b981); }
+
+  @keyframes growBar {
+    from { width: 0%; }
+  }
+
+  .legend { display: flex; gap: 20px; margin-bottom: 20px; font-size: 13px; color: var(--text-secondary); }
+  .legend span::before {
+    content: "";
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .legend .la::before { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+  .legend .lb::before { background: linear-gradient(90deg, #34d399, #10b981); }
+
+  .total-row {
+    margin-top: 10px;
+    padding: 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 16px;
+  }
+  .total-row .winner { color: var(--accent-gold); }
+
+  /* PREMORTEM */
+  .premortem-block { margin-top: 18px; }
+  .premortem-block:first-child { margin-top: 0; }
+  .premortem-block h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .opt-a-text { color: var(--accent-blue); }
+  .opt-b-text { color: var(--accent-green); }
+
+  /* 7 DAY PLAN */
+  .day-row {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .day-row:last-child { border-bottom: none; }
+  .day-num {
+    flex-shrink: 0;
+    width: 70px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-green);
+    text-transform: uppercase;
+  }
+  .day-text { font-size: 14px; color: var(--text-primary); }
+
+  /* VERDICT */
+  .verdict-winner {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--accent-gold);
+    margin-bottom: 12px;
+  }
+  .hard-truth {
+    font-style: italic;
+    color: var(--text-secondary);
+    margin-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 14px;
+  }
+
+  /* SHAREABLE CARDS */
+  .share-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .mini-card {
+    flex: 1 1 30%;
+    min-width: 180px;
+    background: var(--bg-card-alt);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 180px;
+  }
+  .mini-card h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .mini-score-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .mini-score-row .score { font-weight: 800; }
+  .mini-verdict-name { font-size: 18px; font-weight: 800; color: var(--accent-gold); margin-bottom: 6px; }
+  .mini-caption { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-top: 6px; }
+  .watermark {
+    font-size: 10px;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    margin-top: 10px;
+    text-align: right;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 20px 16px; }
+    .matrix-row { flex-direction: column; align-items: flex-start; }
+    .matrix-label { width: 100%; margin-bottom: 6px; }
+    .matrix-bars { width: 100%; }
+    .share-row { flex-direction: column; }
+    header h1 { font-size: 24px; }
+    .verdict-winner { font-size: 24px; }
+    .section-title { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>DECISION REPORT</h1>
+    <div class="subtitle">Data Analytics vs. Machine Learning</div>
+    <div class="date" id="report-date"></div>
+    <div class="gradient-line"></div>
+  </header>
+
+  <!-- SECTION 1 -->
+  <div class="card">
+    <div class="section-title title-blue">The Real Decision</div>
+    <p>You're choosing between building job-ready Data Analytics skills now, or investing in deeper Machine Learning skills for the long game. The real trade-off is speed-to-job versus depth-of-skill, inside a self-imposed 2-week deadline. It's hard because your gut already picked Data Analytics, but fear of missing out on ML is competing with that instinct.</p>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="card green">
+    <div class="section-title title-green">The Case For Each Option</div>
+
+    <div class="option-block opt-a">
+      <div class="option-name">Option A — Data Analytics</div>
+      <div class="label">Strongest Case</div>
+      <p>It aligns with skills you already have, and entry-level analytics roles are more numerous and accessible than entry-level ML roles — meaning a faster path to your stated goal of getting a job faster.</p>
+      <div class="label">Hidden Upside</div>
+      <p>Analytics experience gives you real business context and data-handling fluency — the exact foundation ML work eventually requires anyway. Nothing here is wasted if you pivot later.</p>
+      <div class="label">Biggest Weakness</div>
+      <p>Analytics roles can plateau in scope and pay compared to ML/AI positions over the long term.</p>
+      <div class="label">Best If You Value</div>
+      <p>Speed, certainty, and building on what you already know.</p>
+    </div>
+
+    <div class="option-block opt-b">
+      <div class="option-name">Option B — Machine Learning</div>
+      <div class="label">Strongest Case</div>
+      <p>ML skills are higher-ceiling and future-facing — if the goal is long-term career upside, not just the next job, this is the more ambitious bet.</p>
+      <div class="label">Hidden Upside</div>
+      <p>Starting ML now, even partially, means you're not starting from zero later — and the learning curve compounds the earlier you begin.</p>
+      <div class="label">Biggest Weakness</div>
+      <p>Entry-level ML roles are scarcer and typically expect more prerequisite knowledge — directly working against your "get a job faster" goal and your 2-week timeline.</p>
+      <div class="label">Best If You Value</div>
+      <p>Long-term ambition over near-term certainty, and you're willing to accept a slower job search.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="card purple">
+    <div class="section-title title-purple">Assumption Buster</div>
+    <div class="label">Assumptions You May Be Making</div>
+    <ul>
+      <li>That Data Analytics and Machine Learning are mutually exclusive, rather than sequential.</li>
+      <li>That choosing "wrong" now permanently forecloses the other path.</li>
+      <li>That Machine Learning is inherently the more "impressive" or superior choice.</li>
+    </ul>
+    <div class="label">Biases At Play</div>
+    <ul>
+      <li><strong>FOMO / Loss Aversion</strong> — you're weighing the fear of missing ML more heavily than the concrete advantage of Analytics matching your current skills.</li>
+      <li><strong>Status Anxiety Bias</strong> — treating ML as the "better" choice because it sounds more advanced, not because it fits your goal or timeline better.</li>
+    </ul>
+    <div class="label">What You're Definitely Ignoring</div>
+    <p>You already told yourself the answer: your gut, your current skills, and your job-speed goal all point the same direction. You're not actually undecided — you're second-guessing a decision you've already made.</p>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="card">
+    <div class="section-title title-blue">Decision Matrix</div>
+    <div class="legend">
+      <span class="la">Data Analytics</span>
+      <span class="lb">Machine Learning</span>
+    </div>
+
+    <div id="matrix"></div>
+
+    <div class="total-row">
+      <span>Data Analytics — Total</span>
+      <span class="winner" id="total-a">— / 70</span>
+    </div>
+    <div class="total-row">
+      <span>Machine Learning — Total</span>
+      <span id="total-b">— / 70</span>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="card red">
+    <div class="section-title title-red">Premortem — 12 Months From Now</div>
+
+    <div class="premortem-block">
+      <h4 class="opt-a-text">If Data Analytics failed...</h4>
+      <div class="label">3 Reasons</div>
+      <ul>
+        <li>The market got saturated with entry-level analysts and you didn't differentiate.</li>
+        <li>You treated it as a finish line instead of a stepping stone, and stalled.</li>
+        <li>You picked it out of comfort, not genuine interest, and lost motivation halfway.</li>
+      </ul>
+      <div class="label">Early Warning Sign</div>
+      <p>You're applying to roles but getting no interviews after several weeks of consistent effort.</p>
+      <div class="label">Prevention Action</div>
+      <p>Build one portfolio project with real data now, so you have proof of skill, not just claims.</p>
+    </div>
+
+    <div class="premortem-block">
+      <h4 class="opt-b-text">If Machine Learning failed...</h4>
+      <div class="label">3 Reasons</div>
+      <ul>
+        <li>You underestimated the math/coding prerequisites and got stuck early.</li>
+        <li>The job search dragged past your comfort zone with no income coming in.</li>
+        <li>You spread effort thin trying to learn everything at once instead of one focused track.</li>
+      </ul>
+      <div class="label">Early Warning Sign</div>
+      <p>Two weeks in, you're still confused by fundamentals rather than building anything.</p>
+      <div class="label">Prevention Action</div>
+      <p>Set a hard checkpoint — if you can't build one small working model in 30 days, reassess.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="card green">
+    <div class="section-title title-green">7-Day Test Plan</div>
+    <div class="day-row">
+      <div class="day-num">Day 1–2</div>
+      <div class="day-text">Research 5 real entry-level Data Analytics job postings — note the required tools and skills.</div>
+    </div>
+    <div class="day-row">
+      <div class="day-num">Day 3–4</div>
+      <div class="day-text">Do one small analytics exercise (e.g. clean and analyze a public dataset) to test if you enjoy the work.</div>
+    </div>
+    <div class="day-row">
+      <div class="day-num">Day 5–6</div>
+      <div class="day-text">Talk to one person working in Data Analytics or ML about what their day-to-day and job search actually looked like.</div>
+    </div>
+    <div class="day-row">
+      <div class="day-num">Day 7</div>
+      <div class="day-text">Decide: if the exercise felt engaging and job postings match your current skill level, commit to Data Analytics.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="card gold">
+    <div class="section-title title-gold">The Verdict</div>
+    <div class="verdict-winner">Data Analytics</div>
+    <p>It wins because it matches your current skills, fits your 2-week decision window, and directly serves your stated goal of getting a job faster. Your gut already told you this — the analysis just confirms it.</p>
+    <div class="label">What Could Flip This</div>
+    <p>If your real priority shifts from "fastest job" to "highest long-term ceiling regardless of timeline," Machine Learning becomes the stronger pick.</p>
+    <div class="hard-truth">Hard truth: you can't optimize for speed and maximum long-term upside at the same time — pick the one that matches what you actually need right now, not what sounds more impressive.</div>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="card gold">
+    <div class="section-title title-gold">Shareable Cards</div>
+    <div class="share-row">
+
+      <div class="mini-card">
+        <h4>Matrix Summary</h4>
+        <div>
+          <div class="mini-score-row"><span>Data Analytics</span><span class="score" id="mini-total-a">—</span></div>
+          <div class="mini-score-row"><span>Machine Learning</span><span class="score" id="mini-total-b">—</span></div>
+        </div>
+        <div class="watermark">Built with Claude AI</div>
+      </div>
+
+      <div class="mini-card">
+        <h4>Verdict</h4>
+        <div>
+          <div class="mini-verdict-name">Data Analytics</div>
+          <p class="mini-caption">Matches your skills, timeline, and goal — the fastest real path to a job.</p>
+        </div>
+        <div class="watermark">Built with Claude AI</div>
+      </div>
+
+      <div class="mini-card">
+        <h4>Share This</h4>
+        <div>
+          <p class="mini-caption"><strong>"I almost talked myself out of the obvious choice."</strong><br>
+          Spent 2 weeks torn between Data Analytics and Machine Learning.<br>
+          Turns out my gut was right the whole time.<br>
+          Sometimes the answer isn't the flashier one — it's the one that fits your timeline.</p>
+        </div>
+        <div class="watermark">Built with Claude AI</div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>Built with Claude AI | ABTalks 60-Day Challenge</footer>
+</div>
+
+<script>
+  document.getElementById('report-date').textContent = new Date().toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // Dimension scores: [Data Analytics, Machine Learning]
+  const dims = [
+    { label: "Life/Career Upside", a: 6, b: 8 },
+    { label: "Financial Safety", a: 8, b: 5 },
+    { label: "Growth & Learning", a: 6, b: 9 },
+    { label: "Stress Level (10=low)", a: 8, b: 5 },
+    { label: "Reversibility (10=easy)", a: 8, b: 7 },
+    { label: "Long-term Alignment", a: 7, b: 7 },
+    { label: "Regret Risk (10=low)", a: 8, b: 5 }
+  ];
+
+  const matrixEl = document.getElementById('matrix');
+  let totalA = 0, totalB = 0;
+  let delay = 0;
+
+  dims.forEach(d => {
+    totalA += d.a;
+    totalB += d.b;
+    const row = document.createElement('div');
+    row.className = 'matrix-row';
+    row.innerHTML = `
+      <div class="matrix-label">${d.label}</div>
+      <div class="matrix-bars">
+        <div class="bar-container">
+          <div class="bar-fill bar-a" data-width="${d.a*10}%" style="transition-delay:${delay}s;">${d.a}</div>
+        </div>
+        <div class="bar-container">
+          <div class="bar-fill bar-b" data-width="${d.b*10}%" style="transition-delay:${delay + 0.05}s;">${d.b}</div>
+        </div>
+      </div>
+    `;
+    matrixEl.appendChild(row);
+    delay += 0.1;
+  });
+
+  document.getElementById('total-a').textContent = `${totalA} / 70`;
+  document.getElementById('total-b').textContent = `${totalB} / 70`;
+  document.getElementById('mini-total-a').textContent = `${totalA}/70`;
+  document.getElementById('mini-total-b').textContent = `${totalB}/70`;
+
+  // Trigger bar animation on next frame: width transitions from 0 to data-width
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.bar-fill').forEach(el => {
+        el.style.width = el.getAttribute('data-width');
+      });
+    });
+  });
+</script>
+
+<style>
+  .bar-fill {
+    width: 0%;
+    transition: width 0.8s ease-out;
+  }
+</style>
+</body>
+</html>
