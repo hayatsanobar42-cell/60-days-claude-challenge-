@@ -1,0 +1,24 @@
+CONTENT INTELLIGENCE STUDIO — FINAL REPORT
+=============================================
+Overall Score: 71/100
+Readability: 55 | Structure: 72 | Engagement: 93 | SEO: 56 | Conversion: 70
+
+EXECUTIVE SUMMARY
+This 216-word piece scores 71/100 for LinkedIn/Medium, driven mainly by stronger engagement mechanics than conversion mechanics. Readability sits at 55, structure at 72, SEO/discoverability at 56, and conversion strength at 70. The single largest lever available is tightening paragraph structure for scannability.
+
+STRENGTHS
+- Includes at least one direct question, which invites reader reflection and comment activity.
+- Uses concrete numbers, which lends the argument credibility over vague claims.
+- Paragraph count (8) is well suited to a skimmable LinkedIn/Medium layout.
+- Uses emotionally charged language (results, never, always) that helps the piece stand out in a feed.
+- Strong logical flow — transition language ties paragraphs together rather than leaving them as disconnected thoughts.
+
+WEAKNESSES
+- Passive constructions appear 4 times, softening otherwise direct claims.
+
+OPPORTUNITIES
+- Add a one-line summary or 'TL;DR' near the top — LinkedIn/Medium readers often decide to keep reading within the first two lines.
+- Convert the middle section's examples into a short numbered or bulleted list to boost scannability and dwell time.
+- Test a numerals-led alternate hook — posts that open on a concrete number tend to outperform abstract openers on this platform.
+
+Generated locally in your browser — no data left your device.
