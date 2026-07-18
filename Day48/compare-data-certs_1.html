@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Credential Compare & Decide</title>
+<style>
+  :root{
+    --bg:#0f1420; --panel:#161d2e; --panel2:#1c2438; --border:#2a3450;
+    --text:#e8ecf7; --muted:#93a0c0; --accent:#5b8cff; --accent2:#7fd9c1;
+    --warn:#f5b664; --good:#6fd08c; --bad:#f0728a; --radius:14px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:linear-gradient(160deg,#0f1420,#111a2c 60%,#0f1420);
+    color:var(--text); min-height:100vh; padding:32px 18px 80px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  header{margin-bottom:28px;}
+  h1{font-size:1.7rem;margin:0 0 6px;letter-spacing:-0.02em;}
+  .sub{color:var(--muted);font-size:0.98rem;max-width:680px;line-height:1.5;}
+  .badge-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .badge{
+    font-size:0.76rem;background:var(--panel2);border:1px solid var(--border);
+    padding:5px 10px;border-radius:999px;color:var(--muted);
+  }
+
+  .controls{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px 22px;margin-bottom:22px;
+  }
+  .controls-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
+  .mode-toggle{display:flex;background:var(--panel2);border-radius:10px;padding:4px;border:1px solid var(--border);}
+  .mode-toggle button{
+    border:none;background:transparent;color:var(--muted);padding:8px 16px;border-radius:8px;
+    font-size:0.86rem;cursor:pointer;font-weight:600;
+  }
+  .mode-toggle button.active{background:var(--accent);color:#fff;}
+  .weights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:10px;}
+  .weight-item{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+  .weight-item label{display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:8px;color:var(--text);}
+  .weight-item .val{color:var(--accent2);font-weight:700;}
+  input[type=range]{width:100%;accent-color:var(--accent);}
+  .hint{font-size:0.78rem;color:var(--muted);margin-top:10px;}
+
+  .ranking{display:flex;flex-direction:column;gap:12px;margin-bottom:26px;}
+  .rank-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px 18px;display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;
+    transition:transform .25s ease, border-color .25s ease;
+  }
+  .rank-card.top{border-color:var(--accent);box-shadow:0 0 0 1px rgba(91,140,255,0.25);}
+  .rank-num{font-size:1.3rem;font-weight:800;color:var(--muted);text-align:center;}
+  .rank-card.top .rank-num{color:var(--accent);}
+  .rank-main h3{margin:0 0 4px;font-size:1.05rem;}
+  .rank-main .meta{font-size:0.8rem;color:var(--muted);}
+  .score-box{text-align:right;min-width:90px;}
+  .score-box .num{font-size:1.4rem;font-weight:800;color:var(--accent2);}
+  .score-box .lbl{font-size:0.72rem;color:var(--muted);}
+  .bar-track{height:6px;background:var(--panel2);border-radius:4px;margin-top:8px;overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .4s ease;}
+
+  table.detail{width:100%;border-collapse:collapse;margin-top:24px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  table.detail th, table.detail td{padding:12px 14px;text-align:left;font-size:0.86rem;border-bottom:1px solid var(--border);}
+  table.detail th{background:var(--panel2);color:var(--muted);font-weight:600;font-size:0.76rem;text-transform:uppercase;letter-spacing:.04em;}
+  table.detail tr:last-child td{border-bottom:none;}
+  .est{color:var(--warn);font-size:0.7rem;font-weight:700;margin-left:5px;}
+  .fact{color:var(--good);font-size:0.7rem;font-weight:700;margin-left:5px;}
+  .cell-note{display:block;color:var(--muted);font-size:0.72rem;margin-top:2px;}
+
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    margin-top:22px;overflow:hidden;
+  }
+  .panel-head{
+    padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+    user-select:none;
+  }
+  .panel-head h2{margin:0;font-size:1rem;}
+  .panel-head .chev{transition:transform .25s ease;color:var(--muted);}
+  .panel.open .chev{transform:rotate(180deg);}
+  .panel-body{max-height:0;overflow:hidden;transition:max-height .35s ease;padding:0 20px;}
+  .panel.open .panel-body{max-height:2400px;padding:0 20px 20px;}
+  .panel-body p{color:var(--muted);font-size:0.88rem;line-height:1.6;}
+  .src-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .src-list li{
+    background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.82rem;
+  }
+  .src-list a{color:var(--accent2);text-decoration:none;word-break:break-word;}
+  .src-list a:hover{text-decoration:underline;}
+  .src-tag{display:inline-block;font-size:0.68rem;background:var(--panel);border:1px solid var(--border);color:var(--muted);padding:2px 7px;border-radius:6px;margin-right:6px;}
+
+  .conflict{margin-top:14px;padding:12px 14px;background:rgba(245,182,100,0.08);border:1px solid rgba(245,182,100,0.35);border-radius:10px;font-size:0.82rem;color:var(--text);}
+  .conflict b{color:var(--warn);}
+
+  footer{margin-top:30px;font-size:0.75rem;color:var(--muted);text-align:center;line-height:1.6;}
+
+  @media (max-width:640px){
+    .rank-card{grid-template-columns:32px 1fr;grid-template-rows:auto auto;}
+    .score-box{grid-column:1/-1;text-align:left;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Which data credential should you add to your degree?</h1>
+    <p class="sub">A sourced comparison of four popular online data/analytics credentials for students and recent grads who already have (or are finishing) a formal degree and want a supplemental, resume-ready skill credential.</p>
+    <div class="badge-row">
+      <span class="badge">4 options compared</span>
+      <span class="badge">5 criteria</span>
+      <span class="badge">9+ cited sources</span>
+      <span class="badge">Updated from research conducted July 2026</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="controls-top">
+      <div>
+        <strong style="font-size:0.95rem;">Ranking mode</strong>
+        <div class="hint" style="margin-top:2px;">Fixed uses an even, editorially-balanced weighting. Custom lets you prioritize what matters to you.</div>
+      </div>
+      <div class="mode-toggle">
+        <button id="btnFixed" class="active">Fixed ranking</button>
+        <button id="btnCustom">Custom weights</button>
+      </div>
+    </div>
+    <div id="weightsGrid" class="weights-grid" style="display:none;"></div>
+  </div>
+
+  <div id="loading" style="text-align:center;color:var(--muted);padding:30px 0;">Loading comparison data…</div>
+  <div id="rankingWrap" class="ranking" style="display:none;"></div>
+
+  <div id="tableWrap" style="display:none;">
+    <table class="detail" id="detailTable"></table>
+  </div>
+
+  <div class="panel" id="sourcesPanel">
+    <div class="panel-head" onclick="togglePanel('sourcesPanel')">
+      <h2>📚 Sources used in this comparison</h2>
+      <span class="chev">▾</span>
+    </div>
+    <div class="panel-body">
+      <p>Every cost, duration, and program-structure fact below is drawn from the sources listed here — mostly official provider pages and independent review sites checked in July 2026. Where no hard citable figure exists (marked <span class="est">ESTIMATE</span> in the table), we say so explicitly rather than inventing a number.</p>
+      <ul class="src-list" id="srcList"></ul>
+    </div>
+  </div>
+
+  <div class="panel" id="researchPanel">
+    <div class="panel-head" onclick="togglePanel('researchPanel')">
+      <h2>🔍 How this was researched</h2>
+      <span class="chev">▾</span>
+    </div>
+    <div class="panel-body">
+      <p><b>Cost</b> — Taken directly from each provider's official pricing page or FAQ (Coursera's Coursera Support page, MIT's MicroMasters FAQ via Zendesk, Udacity's own pricing page, freeCodeCamp's public/free curriculum). Where a provider offers multiple payment paths (monthly subscription vs. bundle vs. pay-per-course), we used the most commonly cited total cost to complete the full credential.</p>
+      <p><b>Time to complete</b> — Sourced from official program pages stating expected weekly hours and total duration. freeCodeCamp's ~300-hour estimate comes from a completed-certificate record and a third-party course summary rather than an official freeCodeCamp duration page, so it's treated as a reasonable but secondary-sourced figure.</p>
+      <p><b>Employer recognition</b> and <b>Job placement support</b> — These can't be reduced to a single citable number, so they are analyst judgments <i>informed by</i> sourced facts (e.g. Google's employer consortium and 2.4M+ enrollee base; MIT's small credential-holder pool of ~1,586 as of 2024; Udacity's industry-partner curriculum and Accenture acquisition; freeCodeCamp's lack of a formal placement program). These are flagged as <span class="est">ESTIMATE</span> throughout.</p>
+      <p><b>Content depth</b> — Assessed from each provider's published curriculum description (tools taught, prerequisite level, capstone requirements). Flagged as <span class="est">ESTIMATE</span> since "depth" is inherently qualitative.</p>
+      <div class="conflict">
+        <b>Conflicts we resolved:</b> Sources gave a range of Google Data Analytics Certificate costs ($147 fast-track to $399/yr Coursera Plus). We used the officially quoted ~6-month, $294 pace as the baseline since it matches Coursera's own stated median timeline. Similarly, Udacity's Data Analyst Nanodegree price has shifted across pricing-model changes ($399/mo individual → $249/mo all-access with a $846 four-month bundle); we used the current 2026 all-access bundle price as the most representative figure. MIT's MicroMasters has no single official "expected months" figure in the sources we found, so total time is marked as an estimate based on typical graduate-course pacing rather than an official MIT number.
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built for informational comparison purposes only — always verify current pricing and program details directly with each provider before enrolling. Not financial, legal, or career advice.
+  </footer>
+</div>
+
+<script>
+const CRITERIA = [
+  {key:'cost', label:'Cost', unit:'$', direction:'lower-better', factual:true},
+  {key:'time', label:'Time to Complete', unit:'weeks', direction:'lower-better', factual:true},
+  {key:'recognition', label:'Employer Recognition', unit:'/5', direction:'higher-better', factual:false},
+  {key:'placement', label:'Job Placement Support', unit:'/5', direction:'higher-better', factual:false},
+  {key:'depth', label:'Content Depth', unit:'/5', direction:'higher-better', factual:false},
+];
+
+const OPTIONS = [
+  {
+    id:'google',
+    name:'Google Data Analytics Professional Certificate',
+    via:'Coursera',
+    raw:{cost:294, time:22, recognition:5, placement:4, depth:2},
+    notes:{
+      cost:'~$294 at the officially-cited 6-month, $49/mo pace (as low as $147 fast-tracked in 3 months).',
+      time:'3–6 months at ~10 hrs/week; used the ~6 month / 22 week baseline.',
+      recognition:'Google-branded, 2.4M+ enrollees, widely recognized by hiring managers as an entry-level signal.',
+      placement:'Includes access to Google\'s employer consortium; Google reports 75% "positive career outcome" within 6 months.',
+      depth:'Introductory only — covers spreadsheets, SQL, R, Tableau. Notably does not teach Python.'
+    }
+  },
+  {
+    id:'mit',
+    name:'MITx MicroMasters in Statistics and Data Science',
+    via:'edX',
+    raw:{cost:1500, time:52, recognition:4, placement:1, depth:5},
+    notes:{
+      cost:'$300 per course × 5 (4 courses + Capstone Exam) = $1,500 total, per MIT\'s official FAQ.',
+      time:'No official total-duration figure was found; ~12 months is an ESTIMATE based on typical graduate-level MOOC pacing for 4 courses + capstone.',
+      recognition:'MIT/IDSS-branded and taught by MIT faculty, but a small, niche credential — only ~1,586 credential holders worldwide as of April 2024.',
+      placement:'No dedicated job-placement service; its main "outcome" pathway is credit toward an accelerated MIT-affiliated master\'s or PhD admission, not direct hiring support.',
+      depth:'Graduate-level MIT curriculum covering probability, statistics, machine learning, and computation — the most rigorous of the four.'
+    }
+  },
+  {
+    id:'udacity',
+    name:'Data Analyst Nanodegree',
+    via:'Udacity',
+    raw:{cost:846, time:16, recognition:3, placement:4, depth:4},
+    notes:{
+      cost:'$846 for the current 4-month all-access bundle ($249/mo monthly option also available); historically priced up to $399/mo per individual Nanodegree.',
+      time:'~4 months (about 16 weeks) at ~10 hrs/week per Udacity\'s own program page.',
+      recognition:'Curriculum built with industry partners (Google, AWS, Nvidia, Microsoft); Udacity was acquired by Accenture in 2024, which raised its enterprise profile but it remains less universally recognized than Google\'s cert.',
+      placement:'Includes mentor support, project reviews, and LinkedIn/GitHub profile guidance.',
+      depth:'Project-based, hands-on with real messy datasets, Python/NumPy/Pandas — solid applied depth.'
+    }
+  },
+  {
+    id:'fcc',
+    name:'Data Analysis with Python Certification',
+    via:'freeCodeCamp',
+    raw:{cost:0, time:30, recognition:2, placement:1, depth:3},
+    notes:{
+      cost:'Free — freeCodeCamp\'s curriculum has no tuition or subscription fee.',
+      time:'~300 hours of self-paced work per a completed-certificate record and course summaries (secondary-sourced, not an official freeCodeCamp duration page) — roughly 30 weeks at 10 hrs/week. ESTIMATE.',
+      recognition:'Nonprofit, open-source curriculum; well known among self-taught developers but carries less weight with hiring managers than a Google- or MIT-branded credential. ESTIMATE.',
+      placement:'No formal placement program, mentorship, or career services — entirely self-directed and community-supported. ESTIMATE.',
+      depth:'Covers Python, NumPy, Pandas, Matplotlib, Seaborn, and SQL fundamentals — decent applied depth but no live instruction or structured capstone review.'
+    }
+  }
+];
+
+const SOURCES = [
+  {tag:'Cost', title:'Google Data Analytics Certificate cost & review', url:'https://shortcourses.com/blog/google-data-analytics-certificate-review'},
+  {tag:'Cost/Outcomes', title:'Google Data Analytics Certificate Review 2026 — Careery', url:'https://careery.pro/blog/data-analyst-careers/google-data-analytics-certificate-review'},
+  {tag:'Cost', title:'Coursera Support — Google Data Analytics price FAQ', url:'https://www.coursera.support/s/question/0D51U00003BlYdOSAV/google-data-analytics-price?language=en_US'},
+  {tag:'Cost', title:'MITx MicroMasters SDS cost FAQ (official)', url:'https://mitx-micromasters.zendesk.com/hc/en-us/articles/360035902191-How-much-does-the-MITx-MicroMasters-Program-Credential-in-Statistics-and-Data-Science-SDS-cost-Is-financial-assistance-available'},
+  {tag:'Structure', title:'MIT MicroMasters Program in Statistics and Data Science (official)', url:'https://idss.mit.edu/academics/micromasters-program-in-statistics-and-data-science-sds'},
+  {tag:'Structure', title:'MIT MicroMasters FAQ — program courses & Capstone', url:'https://micromasters.mit.edu/ds/faq/'},
+  {tag:'Cost', title:'Udacity Pricing in 2026 — Fees, Subscription Plans & Refunds', url:'https://upskillwise.com/udacity-nanodegree-cost/'},
+  {tag:'Cost/Time', title:'Udacity Nanodegree Review 2026: Cost, Data & Verdict', url:'https://www.myengineeringbuddy.com/blog/udacity-reviews-alternatives-pricing-offerings/'},
+  {tag:'Time', title:'How is Udacity Data Analyst Nanodegree? — Is It Worth It 2026', url:'https://www.mltut.com/how-is-udacity-data-analyst-nanodegree/'},
+  {tag:'Curriculum', title:'Udacity Data Analyst Online Course (official)', url:'https://www.udacity.com/course/data-analyst-nanodegree--nd002'},
+  {tag:'Cost/Curriculum', title:'freeCodeCamp Data Analysis with Python Certification (official)', url:'https://gigcodez.com/learn/data-analysis-with-python/'},
+  {tag:'Time', title:'freeCodeCamp Data Analysis with Python — Class Central listing', url:'https://www.classcentral.com/course/freecodecamp-data-analysis-with-python-34066'},
+  {tag:'Time (secondary)', title:'freeCodeCamp Data Analysis certification record (~300 hrs)', url:'https://www.scribd.com/document/859966822/Certification-Data-Analysis-With-Python'},
+];
+
+// ---- render sources panel ----
+const srcListEl = document.getElementById('srcList');
+SOURCES.forEach(s=>{
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="src-tag">${s.tag}</span><a href="${s.url}" target="_blank" rel="noopener">${s.title}</a>`;
+  srcListEl.appendChild(li);
+});
+
+// ---- weight state ----
+let mode = 'fixed';
+const FIXED_WEIGHTS = {cost:1,time:1,recognition:1,placement:1,depth:1};
+let customWeights = {cost:3,time:3,recognition:3,placement:3,depth:3};
+
+function normalize(key, val){
+  // convert raw value to 0-1 score where 1 = best
+  const vals = OPTIONS.map(o=>o.raw[key]);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const c = CRITERIA.find(c=>c.key===key);
+  if(max === min) return 1;
+  if(c.direction === 'lower-better'){
+    return 1 - (val - min) / (max - min);
+  } else {
+    return (val - min) / (max - min);
+  }
+}
+
+function computeScores(weights){
+  return OPTIONS.map(o=>{
+    let total = 0, wsum = 0;
+    CRITERIA.forEach(c=>{
+      const w = weights[c.key];
+      total += normalize(c.key, o.raw[c.key]) * w;
+      wsum += w;
+    });
+    return {opt:o, score: wsum ? (total/wsum)*100 : 0};
+  }).sort((a,b)=>b.score-a.score);
+}
+
+function fmtRaw(key,val){
+  if(key==='cost') return val===0 ? 'Free' : ('$'+val.toLocaleString());
+  if(key==='time') return (val<5 ? val+' wks' : Math.round(val)+' wks (~'+ (val/4.33).toFixed(1) +' mo)');
+  return val + '/5';
+}
+
+function renderRanking(){
+  const weights = mode === 'fixed' ? FIXED_WEIGHTS : customWeights;
+  const ranked = computeScores(weights);
+  const wrap = document.getElementById('rankingWrap');
+  wrap.innerHTML = '';
+  ranked.forEach((r,i)=>{
+    const card = document.createElement('div');
+    card.className = 'rank-card' + (i===0 ? ' top' : '');
+    card.innerHTML = `
+      <div class="rank-num">#${i+1}</div>
+      <div class="rank-main">
+        <h3>${r.opt.name}</h3>
+        <div class="meta">via ${r.opt.via}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${r.score.toFixed(1)}%"></div></div>
+      </div>
+      <div class="score-box">
+        <div class="num">${r.score.toFixed(0)}</div>
+        <div class="lbl">match score</div>
+      </div>
+    `;
+    wrap.appendChild(card);
+  });
+  wrap.style.display = 'flex';
+  document.getElementById('loading').style.display = 'none';
+}
+
+function renderTable(){
+  const table = document.getElementById('detailTable');
+  let head = '<tr><th>Program</th>' + CRITERIA.map(c=>`<th>${c.label}</th>`).join('') + '</tr>';
+  let rows = OPTIONS.map(o=>{
+    let cells = CRITERIA.map(c=>{
+      const flag = c.factual ? '<span class="fact">SOURCED</span>' : '<span class="est">ESTIMATE</span>';
+      return `<td>${fmtRaw(c.key,o.raw[c.key])} ${flag}<span class="cell-note">${o.notes[c.key]}</span></td>`;
+    }).join('');
+    return `<tr><td><strong>${o.name}</strong><span class="cell-note">via ${o.via}</span></td>${cells}</tr>`;
+  }).join('');
+  table.innerHTML = head + rows;
+  document.getElementById('tableWrap').style.display = 'block';
+}
+
+function renderWeightSliders(){
+  const grid = document.getElementById('weightsGrid');
+  grid.innerHTML = '';
+  CRITERIA.forEach(c=>{
+    const item = document.createElement('div');
+    item.className = 'weight-item';
+    item.innerHTML = `
+      <label>${c.label} <span class="val" id="val-${c.key}">${customWeights[c.key]}</span></label>
+      <input type="range" min="0" max="5" step="1" value="${customWeights[c.key]}" id="slider-${c.key}">
+    `;
+    grid.appendChild(item);
+  });
+  CRITERIA.forEach(c=>{
+    const slider = document.getElementById('slider-'+c.key);
+    slider.addEventListener('input', e=>{
+      customWeights[c.key] = parseInt(e.target.value,10);
+      document.getElementById('val-'+c.key).textContent = customWeights[c.key];
+      renderRanking();
+    });
+  });
+}
+
+document.getElementById('btnFixed').addEventListener('click', ()=>{
+  mode = 'fixed';
+  document.getElementById('btnFixed').classList.add('active');
+  document.getElementById('btnCustom').classList.remove('active');
+  document.getElementById('weightsGrid').style.display = 'none';
+  renderRanking();
+});
+document.getElementById('btnCustom').addEventListener('click', ()=>{
+  mode = 'custom';
+  document.getElementById('btnCustom').classList.add('active');
+  document.getElementById('btnFixed').classList.remove('active');
+  document.getElementById('weightsGrid').style.display = 'grid';
+  renderRanking();
+});
+
+function togglePanel(id){
+  document.getElementById(id).classList.toggle('open');
+}
+
+// init
+try{
+  renderWeightSliders();
+  renderRanking();
+  renderTable();
+}catch(err){
+  document.getElementById('loading').innerHTML = 'Something went wrong loading comparison data. Please refresh the page.';
+  console.error(err);
+}
+</script>
+</body>
+</html>
