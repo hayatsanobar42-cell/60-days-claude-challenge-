@@ -1,0 +1,377 @@
+{
+  "workflows": [
+    {
+      "id": "seed-debug-1",
+      "category": "debugging",
+      "favorite": false,
+      "custom": false,
+      "title": "Root-Cause Debugger",
+      "model": "both",
+      "description": "Walks the AI through systematic root-cause analysis instead of guessing at fixes — built for your #1 time sink.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language / stack",
+          "type": "select",
+          "options": [
+            "Python",
+            "JavaScript/TypeScript",
+            "Java",
+            "C++",
+            "Go",
+            "Rust",
+            "SQL",
+            "Other"
+          ]
+        },
+        {
+          "key": "error_message",
+          "label": "Exact error message",
+          "type": "text",
+          "placeholder": "Paste the full error/stack trace"
+        },
+        {
+          "key": "expected_behavior",
+          "label": "Expected behavior",
+          "type": "text",
+          "placeholder": "What should happen instead"
+        },
+        {
+          "key": "recent_changes",
+          "label": "Recent changes made",
+          "type": "text",
+          "placeholder": "What changed right before this started"
+        },
+        {
+          "key": "model_choice",
+          "label": "Model",
+          "type": "select",
+          "options": [
+            "Claude",
+            "GPT"
+          ]
+        }
+      ],
+      "template": "Role: You are a senior {{language}} engineer acting as a pair-debugger.\n\nContext:\n- Error message / stack trace: {{error_message}}\n- Expected behavior: {{expected_behavior}}\n- Recent changes made before this started: {{recent_changes}}\n\nTask: Find the root cause, not just a surface patch.\n1. List 3 plausible root causes ranked by likelihood, with one-line reasoning each.\n2. For the most likely cause, explain exactly why it produces this specific error.\n3. Propose the minimal fix (show a diff, not a full rewrite).\n4. Note one regression risk the fix could introduce and how to guard against it.\n\nConstraints: Do not suggest rewriting unrelated code. Ask for missing context (e.g. surrounding function, config) before guessing if the error message alone is ambiguous.",
+      "bestPractices": [
+        "Always paste the full stack trace, not a summary — line numbers matter.",
+        "Mention what changed recently; most bugs are regressions, not mysteries.",
+        "Ask for a diff instead of a full rewrite to keep review time short."
+      ],
+      "example": "language=Python, error_message='KeyError: user_id at line 42 in serializer.py', expected_behavior='serializer should default to None when user_id missing', recent_changes='added optional auth middleware yesterday'"
+    },
+    {
+      "id": "seed-debug-2",
+      "category": "debugging",
+      "favorite": false,
+      "custom": false,
+      "title": "Reproduce-First Bug Report",
+      "model": "both",
+      "description": "Forces a minimal reproduction before any fix is attempted — stops the AI from patching symptoms it hasn't actually seen.",
+      "variables": [
+        {
+          "key": "symptom",
+          "label": "Symptom observed",
+          "type": "text",
+          "placeholder": "What you're seeing go wrong"
+        },
+        {
+          "key": "environment",
+          "label": "Environment",
+          "type": "text",
+          "placeholder": "OS, runtime version, browser, etc."
+        },
+        {
+          "key": "frequency",
+          "label": "Frequency",
+          "type": "select",
+          "options": [
+            "Always reproducible",
+            "Intermittent",
+            "Only in production",
+            "Only on my machine"
+          ]
+        }
+      ],
+      "template": "Role: You are a QA-minded senior engineer.\n\nSymptom: {{symptom}}\nEnvironment: {{environment}}\nFrequency: {{frequency}}\n\nTask:\n1. First, write the smallest possible code snippet that could reproduce this symptom in isolation.\n2. State your confidence that this reproduction actually matches the real bug (low/medium/high) and why.\n3. Only after that, list possible fixes — do not jump straight to a fix.\n\nOutput format: numbered sections (Reproduction, Confidence, Fixes). Keep the reproduction under 20 lines.",
+      "bestPractices": [
+        "If frequency is 'Intermittent' or 'production-only', say so explicitly — it changes the whole strategy toward logging/instrumentation over direct fixes.",
+        "Reject any fix that skips the reproduction step; it's usually guessing."
+      ],
+      "example": "symptom='API returns 500 only for users with no profile picture', environment='Node 20, Postgres 15', frequency='Always reproducible'"
+    },
+    {
+      "id": "seed-build-1",
+      "category": "building",
+      "favorite": false,
+      "custom": false,
+      "title": "Feature Scaffold Generator",
+      "model": "both",
+      "description": "Gets a new feature started with a plan and skeleton code before diving into full implementation, so you review direction early.",
+      "variables": [
+        {
+          "key": "feature_desc",
+          "label": "Feature description",
+          "type": "text",
+          "placeholder": "What the feature should do"
+        },
+        {
+          "key": "stack",
+          "label": "Tech stack",
+          "type": "text",
+          "placeholder": "e.g. React + Node + Postgres"
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "text",
+          "placeholder": "e.g. must reuse existing auth middleware"
+        }
+      ],
+      "template": "Role: Senior full-stack engineer building on stack: {{stack}}.\n\nFeature to build: {{feature_desc}}\nConstraints: {{constraints}}\n\nTask:\n1. Propose a short implementation plan (max 6 steps) before writing code.\n2. Flag any part of the plan that depends on an assumption I haven't confirmed.\n3. Once I approve the plan, scaffold the code: file structure first, then function signatures with comments, then full implementation.\n\nReasoning strategy: Think step by step about data flow before writing any code. Do not skip straight to implementation.\n\nStop and ask me a clarifying question if the feature description is ambiguous about edge cases.",
+      "bestPractices": [
+        "Always get the plan reviewed before full code — catches wrong direction early, cheaply.",
+        "State constraints explicitly (existing patterns, libraries already in use) so the AI doesn't reinvent things."
+      ],
+      "example": "feature_desc='CSV export of a filtered table view', stack='React + Express + Postgres', constraints='must reuse existing pagination query builder'"
+    },
+    {
+      "id": "seed-build-2",
+      "category": "building",
+      "favorite": false,
+      "custom": false,
+      "title": "Algorithm-to-Code Translator",
+      "model": "gpt",
+      "description": "Turns a plain-language or pseudocode idea into working code with explicit complexity/edge-case notes — good for coursework algorithms.",
+      "variables": [
+        {
+          "key": "idea",
+          "label": "Idea / pseudocode",
+          "type": "text",
+          "placeholder": "Describe the algorithm in plain English"
+        },
+        {
+          "key": "language",
+          "label": "Target language",
+          "type": "select",
+          "options": [
+            "Python",
+            "Java",
+            "C++",
+            "JavaScript"
+          ]
+        }
+      ],
+      "template": "Role: Algorithms tutor and {{language}} engineer.\n\nIdea: {{idea}}\n\nTask:\n1. Restate the idea as clear pseudocode first.\n2. Implement it in {{language}} with inline comments explaining each step's purpose.\n3. State time and space complexity, with one sentence justifying each.\n4. List two edge cases the implementation handles and one it does not (be honest).\n\nTone: Educational — explain reasoning, don't just output final code.",
+      "bestPractices": [
+        "Ask for pseudocode first if you're still learning the concept — catches misunderstanding before code hides it.",
+        "Always request complexity analysis; it's easy to skip and it's usually the part being graded."
+      ],
+      "example": "idea='find the shortest path in an unweighted graph', language='Python'"
+    },
+    {
+      "id": "seed-review-1",
+      "category": "review",
+      "favorite": false,
+      "custom": false,
+      "title": "Focused Code Reviewer",
+      "model": "claude",
+      "description": "Reviews code against specific dimensions instead of a vague 'review this' — much higher signal-to-noise.",
+      "variables": [
+        {
+          "key": "code_snippet",
+          "label": "Code to review",
+          "type": "text",
+          "placeholder": "Paste code or describe the file"
+        },
+        {
+          "key": "focus",
+          "label": "Review focus",
+          "type": "select",
+          "options": [
+            "Correctness & edge cases",
+            "Performance",
+            "Readability & maintainability",
+            "Security"
+          ]
+        }
+      ],
+      "template": "Role: Staff engineer doing a focused code review.\n\nCode:\n{{code_snippet}}\n\nReview focus: {{focus}}\n\nTask: Review strictly through the lens of \"{{focus}}\" — do not comment on unrelated style preferences.\n1. List issues found, ranked by severity (blocking / should-fix / nitpick).\n2. For each blocking issue, show the exact fix as a diff.\n3. End with one sentence: is this safe to merge as-is, or not?\n\nQuality check: Before finalizing, re-read your own review and remove any comment that isn't actually about \"{{focus}}\".",
+      "bestPractices": [
+        "Pick one focus per review pass — reviewing everything at once produces noisy, low-actionability feedback.",
+        "Ask explicitly for a merge/no-merge verdict; it forces a real conclusion instead of a list of maybes."
+      ],
+      "example": "focus='Security', code_snippet='an Express route handling file uploads'"
+    },
+    {
+      "id": "seed-review-2",
+      "category": "review",
+      "favorite": false,
+      "custom": false,
+      "title": "Refactor Without Behavior Change",
+      "model": "both",
+      "description": "Keeps refactors safe by requiring the AI to prove behavior is unchanged, not just claim it.",
+      "variables": [
+        {
+          "key": "code_snippet",
+          "label": "Code to refactor",
+          "type": "text",
+          "placeholder": "Paste the code"
+        },
+        {
+          "key": "goal",
+          "label": "Refactor goal",
+          "type": "select",
+          "options": [
+            "Improve readability",
+            "Reduce duplication",
+            "Improve performance",
+            "Modernize syntax/patterns"
+          ]
+        }
+      ],
+      "template": "Role: Senior engineer performing a behavior-preserving refactor.\n\nCode:\n{{code_snippet}}\n\nGoal: {{goal}}\n\nConstraints:\n- The refactor must not change observable behavior or public function signatures.\n- Show the diff, not just the final version.\n- After the diff, list the test cases that would confirm behavior is unchanged (write them if none exist).\n\nIf achieving \"{{goal}}\" would require a behavior change, stop and flag that instead of silently doing it.",
+      "bestPractices": [
+        "Never accept a refactor without seeing the diff — full rewrites hide unintended changes.",
+        "Ask for the confirming test cases even if you don't run them immediately; it documents intent."
+      ],
+      "example": "goal='Reduce duplication', code_snippet='three near-identical API handler functions'"
+    },
+    {
+      "id": "seed-research-1",
+      "category": "research",
+      "favorite": false,
+      "custom": false,
+      "title": "Paper Digest & Critique",
+      "model": "claude",
+      "description": "Summarizes a paper or article into what actually matters for your work, plus honest weaknesses — not a puffed-up abstract rewrite.",
+      "variables": [
+        {
+          "key": "topic",
+          "label": "Paper / article topic",
+          "type": "text",
+          "placeholder": "Title or link description"
+        },
+        {
+          "key": "purpose",
+          "label": "Why you're reading it",
+          "type": "select",
+          "options": [
+            "Literature review for my project",
+            "Understanding a concept for coursework",
+            "Evaluating if it's worth citing",
+            "General background"
+          ]
+        }
+      ],
+      "template": "Role: Research assistant for a student working on: {{purpose}}.\n\nSource: {{topic}}\n\nTask:\n1. Summarize the core claim/contribution in 3 sentences, plain language.\n2. List the method in 2-3 bullet points — enough to understand how they got the result, not full replication detail.\n3. State the strongest limitation the authors acknowledge, and one they likely didn't.\n4. Explain in one paragraph how this connects to my stated purpose: {{purpose}}.\n\nConstraint: Do not fabricate citations, numbers, or quotes. If details are unclear or unavailable to you, say so explicitly rather than guessing.",
+      "bestPractices": [
+        "Always state your purpose — a lit review summary and an exam-prep summary should read completely differently.",
+        "Explicitly ask for unacknowledged limitations; models tend to just parrot the abstract otherwise."
+      ],
+      "example": "topic='a paper on transformer attention efficiency', purpose='Literature review for my project'"
+    },
+    {
+      "id": "seed-research-2",
+      "category": "research",
+      "favorite": false,
+      "custom": false,
+      "title": "Concept Explainer (Feynman Mode)",
+      "model": "both",
+      "description": "Explains a hard concept in layers of increasing depth, checking your understanding at each step instead of one wall of text.",
+      "variables": [
+        {
+          "key": "concept",
+          "label": "Concept to learn",
+          "type": "text",
+          "placeholder": "e.g. eigenvalues, big-O notation, backpropagation"
+        },
+        {
+          "key": "background",
+          "label": "Your current background",
+          "type": "select",
+          "options": [
+            "Complete beginner",
+            "Some exposure, shaky foundation",
+            "Solid basics, need depth",
+            "Advanced, need edge cases"
+          ]
+        }
+      ],
+      "template": "Role: Patient tutor teaching {{concept}} to someone at level: {{background}}.\n\nTask:\n1. Explain {{concept}} in one plain-language analogy first — no jargon.\n2. Then explain it formally/technically, building only on what was just said.\n3. Give one worked example.\n4. Ask me one question to check my understanding before going further.\n\nReasoning strategy: Layer explanations from simple to precise. Never introduce a new term without defining it the moment it appears.",
+      "bestPractices": [
+        "Set your real background honestly — over-stating it skips the analogy step that actually builds intuition.",
+        "Answer the check-in question before asking for more; it's the whole point of this template."
+      ],
+      "example": "concept='gradient descent', background='Some exposure, shaky foundation'"
+    },
+    {
+      "id": "seed-academic-1",
+      "category": "academic",
+      "favorite": false,
+      "custom": false,
+      "title": "Argument Structure Checker",
+      "model": "claude",
+      "description": "Reviews an essay/paper draft for argument structure and logical gaps — not grammar, which most tools already handle.",
+      "variables": [
+        {
+          "key": "draft",
+          "label": "Draft text or thesis",
+          "type": "text",
+          "placeholder": "Paste your draft or thesis statement + outline"
+        },
+        {
+          "key": "assignment_goal",
+          "label": "Assignment goal",
+          "type": "text",
+          "placeholder": "What the assignment is asking you to argue/prove"
+        }
+      ],
+      "template": "Role: Writing tutor focused on argument structure, not grammar.\n\nAssignment goal: {{assignment_goal}}\nDraft: {{draft}}\n\nTask:\n1. State the thesis as you understand it from the draft — flag if it's unclear or drifts partway through.\n2. For each paragraph/section, note whether it supports the thesis directly, indirectly, or not at all.\n3. Identify the single weakest logical link in the argument.\n4. Suggest a fix for that link only — do not rewrite the whole draft.\n\nConstraint: Do not comment on grammar or word choice unless it obscures the argument itself.",
+      "bestPractices": [
+        "Paste your assignment prompt alongside the draft — structure feedback is meaningless without knowing the actual ask.",
+        "Fix one weak link at a time rather than asking for a full rewrite; it keeps your own voice intact."
+      ],
+      "example": "assignment_goal='Argue whether social media regulation should be industry self-governed or state-mandated', draft='(thesis + 3 body paragraph outline)'"
+    },
+    {
+      "id": "seed-academic-2",
+      "category": "academic",
+      "favorite": false,
+      "custom": false,
+      "title": "Citation-Safe Paraphraser",
+      "model": "gpt",
+      "description": "Helps rephrase a source passage in your own words while preserving meaning, to avoid accidental close-paraphrasing in academic writing.",
+      "variables": [
+        {
+          "key": "source_idea",
+          "label": "Idea from the source (in your own rough words)",
+          "type": "text",
+          "placeholder": "Describe the idea, don't paste the original text verbatim"
+        },
+        {
+          "key": "citation_style",
+          "label": "Citation style",
+          "type": "select",
+          "options": [
+            "APA",
+            "MLA",
+            "Chicago",
+            "IEEE"
+          ]
+        }
+      ],
+      "template": "Role: Academic writing assistant.\n\nIdea to express (already summarized by the student, not the original source text): {{source_idea}}\n\nTask:\n1. Rewrite this idea in a clear academic register, in fully original phrasing and sentence structure.\n2. Suggest an in-text citation placeholder in {{citation_style}} format for me to fill in with the real source details.\n3. Remind me: this paraphrase still requires a citation, since the idea itself originates elsewhere even in original wording.\n\nConstraint: Never ask me to paste copyrighted source text directly — only work from my own summary of the idea.",
+      "bestPractices": [
+        "Summarize the source idea in your own rough words before bringing it here — this keeps the whole process originality-safe.",
+        "Remember paraphrasing still needs a citation; only direct quotes vs. paraphrase changes, not the citation requirement."
+      ],
+      "example": "source_idea='the study found remote work increased reported productivity but reduced informal collaboration', citation_style='APA'"
+    }
+  ],
+  "theme": "dark",
+  "explainerDismissed": false,
+  "onboardSeen": true,
+  "recentIds": [],
+  "pbBlocks": []
+}
