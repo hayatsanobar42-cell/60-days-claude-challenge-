@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager</title>
+  <meta name="description" content="A simple, fast task manager to add, complete, and track your to-dos." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      This app needs JavaScript enabled to work. Please enable JavaScript in your browser settings and reload the page.
+    </div>
+  </noscript>
+
+  <header>
+    <h1>My Task Manager</h1>
+    <p class="tagline">Stay on top of what matters today.</p>
+  </header>
+
+  <main>
+    <form id="task-form" novalidate>
+      <input
+        type="text"
+        id="task-input"
+        placeholder="Enter a new task..."
+        autocomplete="off"
+        aria-label="New task"
+        maxlength="200"
+      />
+      <button type="submit">
+        <span class="btn-icon" aria-hidden="true">+</span>
+        <span class="btn-label">Add</span>
+      </button>
+    </form>
+
+    <p id="form-error" class="form-error" role="alert"></p>
+    <p id="storage-warning" class="storage-warning" role="alert"></p>
+
+    <div id="task-summary" class="task-summary" aria-live="polite"></div>
+
+    <p id="empty-message">
+      <span class="empty-icon" aria-hidden="true">📝</span>
+      No tasks yet. Add one above to get started!
+    </p>
+
+    <ul id="task-list" aria-label="Task list"></ul>
+  </main>
+
+  <footer>
+    <p>Simple Task Manager &mdash; a fully working MVP</p>
+    <p class="challenge-credit">Built with Claude as part of the AB Talks 60-Day Claude AI Challenge.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

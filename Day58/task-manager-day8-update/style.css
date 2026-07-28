@@ -1,0 +1,431 @@
+/* ==========================================================================
+   Task Manager — Day 7: Styling & Responsive Design
+   Mobile-first. Breakpoints layered on top of a solid small-screen base.
+   ========================================================================== */
+
+:root {
+  /* Color system */
+  --color-primary: #4f46e5;
+  --color-primary-dark: #4338ca;
+  --color-primary-light: #eef2ff;
+  --color-danger: #dc2626;
+  --color-danger-dark: #b91c1c;
+  --color-danger-light: #fef2f2;
+  --color-bg: #f8f9fc;
+  --color-surface: #ffffff;
+  --color-text: #1f2330;
+  --color-text-muted: #5a6270; /* darkened from #6b7280 for AA contrast compliance on white */
+  --color-warning: #b45309;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-border: #e5e7eb;
+  --color-success: #16a34a;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  /* Radius & shadow */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.25);
+
+  /* Motion */
+  --transition-fast: 150ms ease;
+  --transition-base: 220ms ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Consistent, visible focus ring for keyboard users everywhere */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* ---------- Header ---------- */
+header {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #6366f1 100%);
+  color: white;
+  padding: var(--space-6) var(--space-4) var(--space-5);
+  text-align: center;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+header .tagline {
+  margin-top: var(--space-1);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 400;
+}
+
+/* ---------- Main layout ---------- */
+main {
+  flex: 1;
+  padding: var(--space-5) var(--space-4) var(--space-6);
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---------- Form ---------- */
+#task-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: calc(-1 * var(--space-8));
+  margin-bottom: var(--space-4);
+  background: var(--color-surface);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+#task-input {
+  flex: 1;
+  min-width: 0; /* prevents overflow on narrow screens */
+  padding: 0.75rem 0.9rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+#task-input::placeholder {
+  color: #9ca3af;
+}
+
+#task-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+  background: var(--color-surface);
+}
+
+#task-input.input-error {
+  border-color: var(--color-danger);
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+#task-form button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.75rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+#task-form button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+#task-form button:active {
+  transform: scale(0.97);
+}
+
+.btn-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* ---------- Inline alerts (validation error / storage warning) ---------- */
+.form-error {
+  display: none;
+  color: var(--color-danger);
+  background-color: var(--color-danger-light);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.85rem;
+  margin-bottom: var(--space-3);
+}
+
+.storage-warning {
+  display: none;
+  color: var(--color-warning);
+  background-color: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.85rem;
+  margin-bottom: var(--space-3);
+}
+
+.noscript-banner {
+  background-color: #fef2f2;
+  color: var(--color-danger-dark);
+  text-align: center;
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.9rem;
+  border-bottom: 1px solid #fecaca;
+}
+
+/* ---------- Task summary ---------- */
+.task-summary {
+  display: none;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+  padding-left: var(--space-1);
+}
+
+/* ---------- Empty state ---------- */
+#empty-message {
+  display: none;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-style: normal;
+  padding: var(--space-8) var(--space-4);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.empty-icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: var(--space-2);
+}
+
+/* ---------- Task list ---------- */
+#task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.task-item {
+  background-color: var(--color-surface);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  border: 1px solid transparent;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast),
+    opacity var(--transition-base), max-height var(--transition-base);
+  animation: fadeInUp var(--transition-base);
+}
+
+.task-item:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border);
+}
+
+.task-item.removing {
+  opacity: 0;
+  transform: translateX(12px);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+}
+
+.task-text {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  font-size: 0.98rem;
+  transition: color var(--transition-fast);
+}
+
+.task-item.completed {
+  background-color: #fafafa;
+}
+
+.task-item.completed .task-text {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+.delete-btn {
+  padding: 0.45rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background-color: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.delete-btn:hover {
+  background-color: var(--color-danger);
+  color: white;
+  border-color: var(--color-danger);
+}
+
+.delete-btn:active {
+  background-color: var(--color-danger-dark);
+}
+
+.delete-btn:disabled,
+.task-checkbox:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Footer ---------- */
+footer {
+  text-align: center;
+  padding: var(--space-5) var(--space-4);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.challenge-credit {
+  margin-top: var(--space-1);
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+/* ==========================================================================
+   Responsive breakpoints
+   ========================================================================== */
+
+/* Small phones (< 400px): tighten spacing further */
+@media (max-width: 400px) {
+  header {
+    padding: var(--space-5) var(--space-3) var(--space-4);
+  }
+
+  header h1 {
+    font-size: 1.3rem;
+  }
+
+  main {
+    padding: var(--space-4) var(--space-3) var(--space-5);
+  }
+
+  #task-form {
+    flex-direction: column;
+    margin-top: calc(-1 * var(--space-6));
+  }
+
+  #task-form button {
+    justify-content: center;
+  }
+
+  .btn-label {
+    display: inline;
+  }
+
+  .task-item {
+    padding: var(--space-3);
+  }
+
+  .delete-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.78rem;
+  }
+}
+
+/* Tablets and up (>= 640px): a bit more breathing room */
+@media (min-width: 640px) {
+  main {
+    padding: var(--space-6) var(--space-4) var(--space-8);
+  }
+
+  header {
+    padding: var(--space-8) var(--space-4) var(--space-6);
+  }
+
+  header h1 {
+    font-size: 1.75rem;
+  }
+}
+
+/* Desktops (>= 900px): cap width, add a touch more polish */
+@media (min-width: 900px) {
+  main {
+    max-width: 640px;
+  }
+
+  .task-item:hover {
+    transform: translateY(-1px);
+  }
+}
